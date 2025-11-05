@@ -1,0 +1,238 @@
+{
+  "name": "Feature 1 (Meeting Summarization)",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://router.huggingface.co/hf-inference/models/Falconsai/text_summarization",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization ",
+              "value": "Bearer YOUR_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/JSON"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=inputs",
+              "value": "={{$json[\"notes\"]}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1152,
+        304
+      ],
+      "id": "3c29654f-8d71-4041-917e-e71f6341e4bf",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "42ab80ea-a9f9-4e85-aac9-9139452eb383",
+              "name": "notes",
+              "value": "Alice (PM): We need the UI finalized by Friday so we can demo it next week. Bob (DevOps): I’ll check with the infrastructure team about deployment readiness. Charlie (Backend): The API endpoints are mostly done, but I need help testing them. Dana (QA): I’ll start writing test cases today. Alice: Let’s aim to wrap up by Thursday EOD. Bob: I’ll also review the logging setup. Charlie: Can someone help with auth integration? Dana: I’ll take a look after lunch.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1312,
+        304
+      ],
+      "id": "6a2f8c92-7caa-4342-8234-b8e06338a55c",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6cbf8c31-e24e-4701-ae5f-4555dc00fb5a",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "67470449-28e9-4564-b2f5-b12d65f2f344",
+              "name": "workflow_name",
+              "value": "WF_Summaries",
+              "type": "string"
+            },
+            {
+              "id": "bce1c4fc-00b2-4b90-8754-c07c0c52a38b",
+              "name": "output.summary",
+              "value": "={{$json[\"summary\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "f456619b-9b77-41bf-a0f5-457916be8706",
+              "name": "output.action_items",
+              "value": "={{$json[\"action_items\"]}}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        304
+      ],
+      "id": "0f47bd0c-0997-4d83-a616-5f5f29a3febf",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "jsCode": "let rawSummary = $json[\"summary_text\"] || \"\";\n\n// Always return something valid\nif (typeof rawSummary !== \"string\") {\n  rawSummary = String(rawSummary || \"\");\n}\nrawSummary = rawSummary.replace(/\\s+\\n/g, \"\\n\").trim();\n\n// Split into candidate lines: handle sentences, bullets, or speaker lines\nconst lines = rawSummary\n  .split(/\\n+/)\n  .map(l => l.trim())\n  .filter(Boolean);\n\n// If input has no newlines, also split on sentence boundaries for better coverage\nif (lines.length <= 1) {\n  const sentences = rawSummary.split(/(?<=[.!?])\\s+/).map(s => s.trim()).filter(Boolean);\n  if (sentences.length > 1) {\n    lines.splice(0, lines.length, ...sentences);\n  }\n}\n\n// Patterns that might capture speakers and roles\nconst patterns = [\n  // Name (Role): text\n  /^(?<name>[A-Z][a-z]+)\\s*\\((?<role>[^)]+)\\)\\s*[:\\-–—]\\s*(?<text>.+)$/,\n  // Name: text\n  /^(?<name>[A-Z][a-z]+)\\s*[:\\-–—]\\s*(?<text>.+)$/,\n  // Bullet with Name (Role)\n  /^[\\*\\-\\u2022]\\s*(?<name>[A-Z][a-z]+)\\s*\\((?<role>[^)]+)\\)\\s*(?<text>.+)$/,\n  // Bullet with Name only\n  /^[\\*\\-\\u2022]\\s*(?<name>[A-Z][a-z]+)\\s*(?<text>.+)$/\n];\n\n// Track last known roles per speaker\nconst speakerRoles = {};\nconst discussionPoints = [];\nconst actionItems = [];\n\n// Lexical cues for actions\nconst actionRegex = /\\b(will|need|needs|aim|start|begin|finalize|complete|finish|check|review|test|write|prepare|wrap|deliver|deploy|ship|implement|fix|create|schedule|organize|send|follow up|follow-up|update)\\b/i;\n\nfunction normalizeSentence(s) {\n  // Clean spacing around punctuation and normalize common contractions\n  return String(s || \"\")\n    .replace(/\\s+\\./g, \".\")\n    .replace(/\\s+,/g, \",\")\n    .replace(/\\s{2,}/g, \" \")\n    .replace(/\\bI’ll\\b/g, \"I will\")\n    .replace(/\\bI\\'ll\\b/g, \"I will\")\n    .replace(/\\bLet’s\\b/g, \"Let us\")\n    .replace(/\\bLet's\\b/g, \"Let us\")\n    .trim();\n}\n\nfor (const line of lines) {\n  let matched = null;\n  for (const re of patterns) {\n    const m = line.match(re);\n    if (m && m.groups) {\n      matched = m.groups;\n      break;\n    }\n  }\n\n  if (matched) {\n    const name = matched.name;\n    const role = matched.role ? matched.role.trim() : (speakerRoles[name] || \"Unknown\");\n    const text = normalizeSentence(matched.text);\n\n    if (matched.role) {\n      speakerRoles[name] = matched.role.trim();\n    }\n\n    const isAction = actionRegex.test(text);\n    const rec = { name, role, statement: text };\n\n    if (isAction) actionItems.push(rec);\n    else discussionPoints.push(rec);\n  } else {\n    // No explicit speaker line; treat as general discussion unless it looks like an action\n    const text = normalizeSentence(line);\n    if (!text) continue;\n\n    if (actionRegex.test(text)) {\n      // Without a clear owner, do not fabricate; keep as discussion for safety\n      discussionPoints.push({ name: \"Team\", role: \"General\", statement: text });\n    } else {\n      discussionPoints.push({ name: \"Team\", role: \"General\", statement: text });\n    }\n  }\n}\n\n// Build a narrative baseline from non-action points\nconst narrative = discussionPoints\n  .map(p => {\n    const who = p.name && p.role ? `${p.name} (${p.role})` : p.name || \"Team\";\n    return `${who} ${p.statement}`;\n  })\n  .join(\" \");\n\nconst cleanSummary = normalizeSentence(narrative || rawSummary);\n\n// Ensure roles persist in action items (inherit last known)\nfor (const item of actionItems) {\n  if (item.role === \"Unknown\" && speakerRoles[item.name]) {\n    item.role = speakerRoles[item.name];\n  }\n}\n\nreturn [{\n  json: {\n    summary: cleanSummary,      // non-null narrative baseline\n    raw_action_items: actionItems // structured items for the next node\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        304
+      ],
+      "id": "611a44bf-d99e-40b2-849c-8578fd19af2f",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawItems = Array.isArray($json[\"raw_action_items\"]) ? $json[\"raw_action_items\"] : [];\nconst formatted = [];\n\nfor (const item of rawItems) {\n  if (!item || !item.name || !item.statement) continue;\n\n  const name = item.name;\n  const role = item.role || \"Unknown\";\n  let s = String(item.statement);\n\n  // Normalize style\n  s = s\n    .replace(/\\bI’ll\\b/g, \"I will\")\n    .replace(/\\bI'll\\b/g, \"I will\")\n    .replace(/\\bLet’s\\b/g, \"Let us\")\n    .replace(/\\bLet's\\b/g, \"Let us\")\n    .replace(/\\bwe’ll\\b/gi, \"we will\")\n    .replace(/\\bcan’t\\b/gi, \"cannot\")\n\n    // De-pronoun and make imperative\n    .replace(/^We need (to )?/i, \"\")\n    .replace(/^I will\\s+/i, \"\")\n    .replace(/^Let us\\s+/i, \"\")\n    .replace(/\\baim to\\b/gi, \"\")\n\n    // Phrasing upgrades\n    .replace(/\\bstart writing\\b/gi, \"begin writing\")\n    .replace(/\\bwrap up\\b/gi, \"complete work\")\n    .replace(/\\bso we can demo (it )?next week\\b/gi, \"for next week's demo\")\n    .replace(/\\bso we can demo\\b/gi, \"for demo\")\n    .replace(/\\bso we can\\b/gi, \"to\")\n\n    // Minor domain tweak\n    .replace(/\\bthe UI finalized\\b/gi, \"finalize UI design\")\n\n    // Spacing + punctuation\n    .replace(/\\s+\\./g, \".\")\n    .replace(/\\s{2,}/g, \" \")\n    .trim();\n\n  // Capitalize first letter\n  if (s.length) s = s.charAt(0).toUpperCase() + s.slice(1);\n  // Ensure trailing period\n  if (!/[.!?]$/.test(s)) s += \".\";\n\n  formatted.push(`${name} (${role}): ${s}`);\n}\n\nconst actionItemsText = formatted.length ? (\"Action Items:\\n\" + formatted.join(\"\\n\")) : \"Action Items:\\nNone.\";\n\nreturn [{\n  json: {\n    summary: $json[\"summary\"] || \"\",            // pass-through\n    action_items_array: formatted,              // array of nice lines\n    action_items_formatted: actionItemsText     // printable block\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        288
+      ],
+      "id": "84faa095-a7fd-4068-a501-31a67db2dd42",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawSummary = typeof $json[\"summary\"] === \"string\" ? $json[\"summary\"] : \"\";\nconst actionItems = Array.isArray($json[\"action_items_array\"]) ? $json[\"action_items_array\"] : [];\n\n// Extract attendees if the baseline includes Name (Role)\nconst attendeeMatches = rawSummary ? rawSummary.match(/([A-Z][a-z]+)\\s*\\(([^)]+)\\)/g) : null;\nconst attendees = attendeeMatches ? [...new Set(attendeeMatches)] : [];\nconst roles = {};\n(attendees || []).forEach(att => {\n  const m = att.match(/([A-Z][a-z]+)\\s*\\(([^)]+)\\)/);\n  if (m) roles[m[1]] = m[2];\n});\n\n// Build professional summary\nlet professional = \"MEETING SUMMARY\\n\\n\";\n\n// Purpose: generic but accurate; can be customized upstream if you pass a purpose field\nprofessional += \"Purpose:\\n\";\nprofessional += \"Summarize decisions, key discussion points, and next steps with clear ownership and timing.\\n\\n\";\n\n// Attendees\nif (Object.keys(roles).length) {\n  professional += \"Attendees:\\n\";\n  Object.entries(roles).forEach(([n, r]) => (professional += `- ${n} (${r})\\n`));\n  professional += \"\\n\";\n}\n\n// Key discussion points\nprofessional += \"Key Discussion Points:\\n\";\nif (rawSummary && rawSummary.trim()) {\n  const sentences = rawSummary\n    .replace(/\\s+\\./g, \".\")\n    .split(/(?<=\\.)\\s+/)\n    .map(s => s.trim())\n    .filter(Boolean)\n    .slice(0, 6); // cap for readability\n\n  if (sentences.length) {\n    professional += sentences.map(s => `- ${s}`).join(\"\\n\") + \"\\n\\n\";\n  } else {\n    professional += \"- No discussion captured.\\n\\n\";\n  }\n} else {\n  professional += \"- No discussion captured.\\n\\n\";\n}\n\n// Decisions (lightweight defaults; can be inferred upstream if you add logic)\nprofessional += \"Decisions:\\n\";\nprofessional += \"- Proceed with identified priority tasks; validate readiness ahead of dependent milestones.\\n\\n\";\n\n// Action items\nprofessional += \"Action Items:\\n\";\nprofessional += actionItems && actionItems.length ? actionItems.join(\"\\n\") : \"None.\";\nprofessional += \"\\n\\nNext Steps:\\n\";\nprofessional += \"- Confirm status against deadlines; escalate blockers early.\\n\";\n\nreturn [{\n  json: {\n    professional_summary: professional,\n    summary: rawSummary || \"\",\n    action_items: actionItems\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        288
+      ],
+      "id": "0dd1d1fe-d6f9-4b50-84d4-0faf985e9e82",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1488,
+        224
+      ],
+      "id": "50afd433-be57-43d5-8357-39ee68f7757f",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "50722dfb-4f4d-425b-8bfe-9962534045d1",
+  "meta": {
+    "instanceId": "2da04f59d427957dc124e28a94b37ab6ed3c2c81388b1955ce17aea435b6c511"
+  },
+  "id": "cDpFhm5sP0KnpKaR",
+  "tags": []
+}

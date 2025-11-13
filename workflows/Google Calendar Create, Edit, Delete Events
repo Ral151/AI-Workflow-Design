@@ -1,0 +1,319 @@
+{
+  "name": "CCAI9024 Midhat",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        0
+      ],
+      "id": "76a17d11-7d99-4535-ba2e-9c9661ea8ecf",
+      "name": "When chat message received",
+      "webhookId": "da65d939-d56f-4701-8a38-1cb74b233ae3"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Today's day is {{ $now }}\n\n# Role\nYou are an AI Scheduling Assistant with access to Google Calendar. Your job is to book, reschedule, or cancel appointments according to the instructions and cariables provided.\n\n# Tools Available\n- Create: Create a new event\n- Get: Retrieve all events (find by time)\n- Update: Reschedule an event (find by time, update to new time) or change location (find by time, update to new location)\n- Delete: Delete an event (find by time, delete)\n- Check: Check availability in given time frame\n\n# Variables Provided\n- action: \"create\", \"update\", \"check\", \"get\", or \"delete\"\n- create_time: The time for creating, deleting, or the original time of event to be updated (format: standard calendar time)\n- update_time: The new time to update to (only present if action = \"update\")\n- check_time: The time or time range to check for availability or to get events (only present if action = \"check\" or \"get\")\n\n# Context\nThe lead's request:\n- Action: [Execute previous nodes for preview]\n- Create Time: [Execute previous nodes for preview]\n- Update Time: [Execute previous nodes for preview]\n- Availability : {{ $json.body.args.check_time }}\nLead Details:\n- Name: [Execute previous nodes for preview]\n- Email: [Execute previous nodes for preview]\n- Phone Number: [Execute previous nodes for preview]\n\n# Instructions\n1. If \"action\" is \"check\":\n- Use \"Check\" for the requested \"check_time\"\n- Report clearly whether the slot or range is available or not. If they asked what times are available, provide two time ranges at different parts of the day, closest times possible. Eg, Monday between 10am and 1pm or Tuesday between 1pm and 4pm.\n\n2. If \"action\" is \"create\":\n- Use \"check\" for the requested \"create_time\"\n- If available, use \"Create\" to book an appointment at \"create_time\"\n- If not available, report: 'The requested time is not available. Please choose another time.'\n\n3. If \"action\" is \"delete\":\n- Use \"Get\" to find the appointment at \"create_time\"\n- If found, use \"delete\" to delete that event.\n- If not found, report: 'No event found at that specified time to cancel.'\n\n4. If \"action\" is \"update\":\n- Use \"Get\" to find the appointment at \"create_time\"\n- If found, use \"Check\" for the desired \"update_time\"\n- If the new time is available, use \"Update\" to move the event to \"update_time\"\n- If not available, report: 'The requested reschedule time is not available. Please choose another time.'\n- If original appointment not found, report: 'No appointment found at the specified time to reschedule.'\n\n5. If \"action\" is \"get\":\n- Use \"Get to find the events from \"check_time\" (time or time range)\n- If no events found, report: 'No event found at the specified time.'\n- If events found, iterate for each event found, report ALL events within time range (if given)\n\n# Output\nAlways confirm the result of your action:\n- For creations: 'Even successfully created at [time].'\n- For deletions: 'Event at [time] deleted.'\n- For updating: 'Event rescheduled from [create_time] to [update_time].'\n- For errors: 'No event found at [create_time] to [action].'\n- For checking: 'The time slot at [check_time] is available.' or 'The time slot at [check_time] is not available.'\n- For getting: 'You have the following events scheduled:','[event_name] from: [start_time in 12 hour format] to: [end_time in 12 hour format]' (iterate this for each event)\n\n# Example Inputs & Expected Flows\n\n## Check Example\n- action: \"check\"\n- check_time: \"2025-11-13T10:00:00\"\n= Check if 10:00 AM is free, report result.\n\n## Get Example\n- action: \"get\"\n- check_time: \"2025-11-13T00:00:00\" to \"2025-11-13T23:59:59\"\n= Get all events from 2025-11-13T00:00:00 to 2025-11-13T23:59:59, report ALL results.\n\n## Create Example\n- action: \"create\"\n- create_time: \"2025-11-13T10:00:00\"\n= Check, if available, create at 10:00 AM, confirm.\n\n## Delete Example\n- action: \"delete\"\n- create_time: \"2025-11-13T10:00:00\"\n= Find event at 10:00 AM, cancel if found, confirm.\n\n## Update Example\n- action: \"update\"\n- create_time: \"2025-11-13T10:00:00\"\n- update_time: \"2025-11-13T11:40:00\" (if not provided, default check within next 3 days)\n= Find event from 10:00 AM, check availability at 11:30 AM, if free, move to 11:30AM, confirm.\n\n# Tone\nKeep instructions, confirmations, and error messages clear and direct.\n\n# Notes\n- All timezones provided are Asia/Hong Kong timezone unless otherwise stated.\n- All bookings are 50 minutes unless otherwise states.\n- When checking availability, only check for times within the next 3 days or this week, unless otherwise stated.\n- Always check before creating or updating.\n- Never modify or delete an event unless you are sure you have identified the correct event."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "48acce2e-621d-4c43-bd1c-48ef7a206531",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        208
+      ],
+      "id": "ffa36f1e-6ed4-4987-a6b3-01c0408ead79",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "2b702e8aa8ed6408604413365ac5188f6a3059bbace3863d080d91aa85639eda@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Tutorials"
+        },
+        "start": "={{ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        208
+      ],
+      "id": "ce43b8ed-5072-4209-8b11-aa46962bd73e",
+      "name": "Create",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "MTq6J1YfKBDxWxSs",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "2b702e8aa8ed6408604413365ac5188f6a3059bbace3863d080d91aa85639eda@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Tutorials"
+        },
+        "eventId": "={{ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        512,
+        208
+      ],
+      "id": "b8a1f0cb-26df-47fe-9516-72ecc38ebc9c",
+      "name": "Delete",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "MTq6J1YfKBDxWxSs",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "2b702e8aa8ed6408604413365ac5188f6a3059bbace3863d080d91aa85639eda@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Tutorials"
+        },
+        "timeMin": "={{ $fromAI('Start_Time', ``, 'string') }}",
+        "timeMax": "={{ $fromAI('End_Time', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        208
+      ],
+      "id": "f01cea8d-f33b-489d-a8ab-4f7fe4a161d7",
+      "name": "Check",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "MTq6J1YfKBDxWxSs",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "2b702e8aa8ed6408604413365ac5188f6a3059bbace3863d080d91aa85639eda@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Tutorials"
+        },
+        "returnAll": "={{ $fromAI('Return_All', ``, 'Boolean') }}",
+        "timeMin": "={{ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ $fromAI('Before', ``, 'string') }}",
+        "options": {
+          "orderBy": "startTime"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        848,
+        208
+      ],
+      "id": "1372adfb-17e4-42b0-8202-9173a720ddde",
+      "name": "Get",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "MTq6J1YfKBDxWxSs",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "2b702e8aa8ed6408604413365ac5188f6a3059bbace3863d080d91aa85639eda@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Tutorials"
+        },
+        "eventId": "={{ $fromAI('Event_ID', ``, 'string') }}",
+        "updateFields": {
+          "end": "={{ $fromAI('End', ``, 'string') }}",
+          "start": "={{ $fromAI('Start', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        736,
+        208
+      ],
+      "id": "4a64e673-e91f-4e3f-a38f-95f377a15b9f",
+      "name": "Update",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "MTq6J1YfKBDxWxSs",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "82ea4f7f-af07-4a9d-98c6-27c4de084b84",
+      "name": "Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7LFEzAhtx6MTkxdU",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Hong_Kong",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "02bc4aa8-b993-4ef0-9a29-44a2ade41413",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98c7ada0c788bbd6e0fda08f5f528d68c35f49f7b400778991e3be8fba636fa9"
+  },
+  "id": "srtgcZlRItJkkDDc",
+  "tags": []
+}

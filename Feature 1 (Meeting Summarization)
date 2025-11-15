@@ -1,16 +1,80 @@
 {
-  "name": "Feature 1 (Meeting Summarization)",
+  "name": "Feature 1 FINAL",
   "nodes": [
     {
       "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "42ab80ea-a9f9-4e85-aac9-9139452eb383",
+              "name": "notes",
+              "value": "Quarterly Business Review - Q1 2024  Attendees:  - Sarah (CEO), Mike (CTO), Jessica (Head of Marketing), David (Head of Sales), Lisa (CFO)  Executive Summary: The company exceeded Q1 revenue targets by 15% but missed profitability goals due to increased infrastructure costs. Customer acquisition cost increased by 25% while customer lifetime value decreased by 10%.   Department Updates: - Engineering: Shipped 3 major features, but technical debt increased by 30% - Marketing: Successful product launch campaign, but lead quality decreased - Sales: Closed 50 new enterprise deals, but sales cycle lengthened by 2 weeks - Finance: Cash flow positive, but operational costs 20% over budget  Critical Issues: - Server costs increased 40% due to inefficient resource allocation - Customer churn rate increased from 5% to 8% this quarter - Key engineering hires delayed by 3 months - Compliance audit scheduled for June requires immediate preparation  Action Items: - Mike to optimize cloud infrastructure and reduce costs by 25% by end of Q2 - Jessica to revise marketing strategy to improve lead quality within 30 days - David to implement new sales training program to reduce sales cycle by 1 week - Lisa to prepare compliance documentation and conduct internal audit by May 15 - Sarah to approve revised hiring plan and budget adjustments by next week - All departments to submit Q2 operational plans with cost reductions by April 20  Strategic Decisions: - Freeze non-essential hiring until cost targets are met - Invest in customer success to reduce churn below 5% - Delay new market expansion until Q3 to focus on profitability - Approve $500K budget for technical debt reduction projects  Risks: - Continued cost overruns may require layoffs in Q3 - Competitor launching similar product in 60 days - Key personnel considering offers from competitors - Regulatory changes may impact product roadmap",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        336
+      ],
+      "id": "236318a4-c6b0-4a40-bab4-bfde6239bbd4",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6cbf8c31-e24e-4701-ae5f-4555dc00fb5a",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "67470449-28e9-4564-b2f5-b12d65f2f344",
+              "name": "workflow_name",
+              "value": "WF_Summaries",
+              "type": "string"
+            },
+            {
+              "id": "bce1c4fc-00b2-4b90-8754-c07c0c52a38b",
+              "name": "output.summary",
+              "value": "={{$json.output.summary}}",
+              "type": "string"
+            },
+            {
+              "id": "f456619b-9b77-41bf-a0f5-457916be8706",
+              "name": "output.action_items",
+              "value": "={{ $json.output.action_items }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1824,
+        352
+      ],
+      "id": "def75639-e62e-4568-ba83-b6980c9191d3",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
         "method": "POST",
-        "url": "https://router.huggingface.co/hf-inference/models/Falconsai/text_summarization",
+        "url": "https://router.huggingface.co/hf-inference/models/philschmid/bart-large-cnn-samsum",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization ",
-              "value": "Bearer YOUR_API_KEY"
+              "value": "Bearer YOUR_HF_API_KEY_HERE"
             },
             {
               "name": "Content-Type",
@@ -35,140 +99,63 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        -1152,
-        304
+        864,
+        512
       ],
-      "id": "3c29654f-8d71-4041-917e-e71f6341e4bf",
+      "id": "58118b6d-967a-4f9d-b74e-eca1cc1cb166",
       "name": "HTTP Request1"
     },
     {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "42ab80ea-a9f9-4e85-aac9-9139452eb383",
-              "name": "notes",
-              "value": "Alice (PM): We need the UI finalized by Friday so we can demo it next week. Bob (DevOps): I’ll check with the infrastructure team about deployment readiness. Charlie (Backend): The API endpoints are mostly done, but I need help testing them. Dana (QA): I’ll start writing test cases today. Alice: Let’s aim to wrap up by Thursday EOD. Bob: I’ll also review the logging setup. Charlie: Can someone help with auth integration? Dana: I’ll take a look after lunch.",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
       "position": [
-        -1312,
-        304
+        1168,
+        352
       ],
-      "id": "6a2f8c92-7caa-4342-8234-b8e06338a55c",
-      "name": "Edit Fields2"
+      "id": "265f88ca-2d83-4849-afc2-048514d5ea5a",
+      "name": "Merge"
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "6cbf8c31-e24e-4701-ae5f-4555dc00fb5a",
-              "name": "status",
-              "value": "success",
-              "type": "string"
-            },
-            {
-              "id": "67470449-28e9-4564-b2f5-b12d65f2f344",
-              "name": "workflow_name",
-              "value": "WF_Summaries",
-              "type": "string"
-            },
-            {
-              "id": "bce1c4fc-00b2-4b90-8754-c07c0c52a38b",
-              "name": "output.summary",
-              "value": "={{$json[\"summary\"]}}",
-              "type": "string"
-            },
-            {
-              "id": "f456619b-9b77-41bf-a0f5-457916be8706",
-              "name": "output.action_items",
-              "value": "={{$json[\"action_items\"]}}",
-              "type": "array"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -320,
-        304
-      ],
-      "id": "0f47bd0c-0997-4d83-a616-5f5f29a3febf",
-      "name": "Edit Fields3"
-    },
-    {
-      "parameters": {
-        "jsCode": "let rawSummary = $json[\"summary_text\"] || \"\";\n\n// Always return something valid\nif (typeof rawSummary !== \"string\") {\n  rawSummary = String(rawSummary || \"\");\n}\nrawSummary = rawSummary.replace(/\\s+\\n/g, \"\\n\").trim();\n\n// Split into candidate lines: handle sentences, bullets, or speaker lines\nconst lines = rawSummary\n  .split(/\\n+/)\n  .map(l => l.trim())\n  .filter(Boolean);\n\n// If input has no newlines, also split on sentence boundaries for better coverage\nif (lines.length <= 1) {\n  const sentences = rawSummary.split(/(?<=[.!?])\\s+/).map(s => s.trim()).filter(Boolean);\n  if (sentences.length > 1) {\n    lines.splice(0, lines.length, ...sentences);\n  }\n}\n\n// Patterns that might capture speakers and roles\nconst patterns = [\n  // Name (Role): text\n  /^(?<name>[A-Z][a-z]+)\\s*\\((?<role>[^)]+)\\)\\s*[:\\-–—]\\s*(?<text>.+)$/,\n  // Name: text\n  /^(?<name>[A-Z][a-z]+)\\s*[:\\-–—]\\s*(?<text>.+)$/,\n  // Bullet with Name (Role)\n  /^[\\*\\-\\u2022]\\s*(?<name>[A-Z][a-z]+)\\s*\\((?<role>[^)]+)\\)\\s*(?<text>.+)$/,\n  // Bullet with Name only\n  /^[\\*\\-\\u2022]\\s*(?<name>[A-Z][a-z]+)\\s*(?<text>.+)$/\n];\n\n// Track last known roles per speaker\nconst speakerRoles = {};\nconst discussionPoints = [];\nconst actionItems = [];\n\n// Lexical cues for actions\nconst actionRegex = /\\b(will|need|needs|aim|start|begin|finalize|complete|finish|check|review|test|write|prepare|wrap|deliver|deploy|ship|implement|fix|create|schedule|organize|send|follow up|follow-up|update)\\b/i;\n\nfunction normalizeSentence(s) {\n  // Clean spacing around punctuation and normalize common contractions\n  return String(s || \"\")\n    .replace(/\\s+\\./g, \".\")\n    .replace(/\\s+,/g, \",\")\n    .replace(/\\s{2,}/g, \" \")\n    .replace(/\\bI’ll\\b/g, \"I will\")\n    .replace(/\\bI\\'ll\\b/g, \"I will\")\n    .replace(/\\bLet’s\\b/g, \"Let us\")\n    .replace(/\\bLet's\\b/g, \"Let us\")\n    .trim();\n}\n\nfor (const line of lines) {\n  let matched = null;\n  for (const re of patterns) {\n    const m = line.match(re);\n    if (m && m.groups) {\n      matched = m.groups;\n      break;\n    }\n  }\n\n  if (matched) {\n    const name = matched.name;\n    const role = matched.role ? matched.role.trim() : (speakerRoles[name] || \"Unknown\");\n    const text = normalizeSentence(matched.text);\n\n    if (matched.role) {\n      speakerRoles[name] = matched.role.trim();\n    }\n\n    const isAction = actionRegex.test(text);\n    const rec = { name, role, statement: text };\n\n    if (isAction) actionItems.push(rec);\n    else discussionPoints.push(rec);\n  } else {\n    // No explicit speaker line; treat as general discussion unless it looks like an action\n    const text = normalizeSentence(line);\n    if (!text) continue;\n\n    if (actionRegex.test(text)) {\n      // Without a clear owner, do not fabricate; keep as discussion for safety\n      discussionPoints.push({ name: \"Team\", role: \"General\", statement: text });\n    } else {\n      discussionPoints.push({ name: \"Team\", role: \"General\", statement: text });\n    }\n  }\n}\n\n// Build a narrative baseline from non-action points\nconst narrative = discussionPoints\n  .map(p => {\n    const who = p.name && p.role ? `${p.name} (${p.role})` : p.name || \"Team\";\n    return `${who} ${p.statement}`;\n  })\n  .join(\" \");\n\nconst cleanSummary = normalizeSentence(narrative || rawSummary);\n\n// Ensure roles persist in action items (inherit last known)\nfor (const item of actionItems) {\n  if (item.role === \"Unknown\" && speakerRoles[item.name]) {\n    item.role = speakerRoles[item.name];\n  }\n}\n\nreturn [{\n  json: {\n    summary: cleanSummary,      // non-null narrative baseline\n    raw_action_items: actionItems // structured items for the next node\n  }\n}];\n"
+        "jsCode": "// Node: UNIVERSAL Extraction from Formatted Notes\nconst input = $input.all()[0].json;\n\nconst formattedNotes = input.formatted_notes;\nconst summary = input.summary;\n\nconsole.log('=== UNIVERSAL EXTRACTION ===');\n\nconst lines = formattedNotes.split('\\n');\nconst actionItems = [];\n\n// Expanded list of section headers that indicate action items\nconst actionSectionHeaders = [\n  'Action Items:',\n  'Tasks:',\n  'Next Steps:',\n  'To Do:',\n  'Action Plan:',\n  'Assignments:',\n  'Responsibilities:',\n  'Action Items (URGENT):',\n  'Critical Actions:',\n  'Immediate Actions:',\n  'What we need to do:',\n  'Follow-up Items:'\n];\n\nlet inActionSection = false;\nlet currentSection = '';\n\nlines.forEach((line, index) => {\n  const trimmed = line.trim();\n  \n  // Check if this line starts any action section\n  for (const header of actionSectionHeaders) {\n    if (trimmed.includes(header)) {\n      inActionSection = true;\n      currentSection = header;\n      console.log(`✅ Entered ${header} section at line ${index}`);\n      return;\n    }\n  }\n  \n  // Multi-line header detection (like \"Action\" + \"Items:\")\n  if (trimmed.includes('Action') && lines[index + 1] && lines[index + 1].includes('Items:')) {\n    inActionSection = true;\n    currentSection = 'Action Items:';\n    console.log(`✅ Entered Action Items section at line ${index}`);\n    return;\n  }\n  \n  // Look for section endings\n  if (inActionSection) {\n    const nextSections = [\n      'Process Improvements:', 'Key Learnings:', 'Decisions:', 'Risks:',\n      'Background:', 'Discussion:', 'Goals:', 'Completed:', 'Status:'\n    ];\n    \n    for (const endSection of nextSections) {\n      if (trimmed.includes(endSection)) {\n        inActionSection = false;\n        console.log(`❌ Exited action section at line ${index} (found ${endSection})`);\n        return;\n      }\n    }\n  }\n  \n  // Extract bullet points when in action section\n  if (inActionSection && trimmed.startsWith('-') && trimmed.length > 20) {\n    const cleanItem = trimmed.replace(/^-\\s*/, '').trim();\n    \n    // Better filtering for real action items\n    const isRealActionItem = \n      cleanItem.includes(' to ') || \n      cleanItem.includes(' will ') ||\n      cleanItem.includes(' responsible for ') ||\n      cleanItem.match(/\\(\\w+\\)\\s+to\\s+/) ||\n      cleanItem.match(/\\w+\\s+\\(\\w+\\)\\s+to\\s+/) ||\n      cleanItem.includes(' by ') ||\n      cleanItem.includes(' before ');\n    \n    if (isRealActionItem) {\n      console.log(`✅ FOUND ACTION ITEM in ${currentSection}: \"${cleanItem}\"`);\n      actionItems.push(cleanItem);\n    }\n  }\n});\n\nconsole.log('Action items found:', actionItems);\n\n// FALLBACK: If no structured section found, look for assignment patterns anywhere\nif (actionItems.length === 0) {\n  console.log('No structured section found, using pattern-based fallback...');\n  \n  const assignmentPatterns = [\n    /([A-Z][a-z]+)\\s+to\\s+([^.!?]+?(?:by|before|due|on)\\s+\\w+\\s+\\d{1,2})/gi,\n    /([A-Z][a-z]+)\\s+will\\s+([^.!?]+?(?:by|before)\\s+\\w+\\s+\\d{1,2})/gi,\n    /-\\s*([^.!?]+?(?:by|before)\\s+(?:end of|EOD|tomorrow|next week|\\w+day|\\d+\\/\\d+))/gi\n  ];\n  \n  const fallbackItems = [];\n  const notesText = formattedNotes;\n  \n  assignmentPatterns.forEach(pattern => {\n    const matches = notesText.matchAll(pattern);\n    for (const match of matches) {\n      const item = match[0].replace(/^-\\s*/, '').trim();\n      if (item.length > 20 && !fallbackItems.includes(item)) {\n        console.log(`✅ FOUND via pattern: \"${item}\"`);\n        fallbackItems.push(item);\n      }\n    }\n  });\n  \n  actionItems.push(...fallbackItems);\n}\n\nreturn [\n  {\n    \"status\": \"success\",\n    \"workflow_name\": \"WF_Summaries\",\n    \"output\": {\n      \"summary\": summary,\n      \"action_items\": actionItems.length > 0 ? actionItems : [\"No actionable items identified in meeting notes\"]\n    }\n  }\n];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -928,
-        304
+        1584,
+        352
       ],
-      "id": "611a44bf-d99e-40b2-849c-8578fd19af2f",
+      "id": "d508b703-31aa-490c-a73b-e236fb18d376",
       "name": "Code in JavaScript3"
-    },
-    {
-      "parameters": {
-        "jsCode": "const rawItems = Array.isArray($json[\"raw_action_items\"]) ? $json[\"raw_action_items\"] : [];\nconst formatted = [];\n\nfor (const item of rawItems) {\n  if (!item || !item.name || !item.statement) continue;\n\n  const name = item.name;\n  const role = item.role || \"Unknown\";\n  let s = String(item.statement);\n\n  // Normalize style\n  s = s\n    .replace(/\\bI’ll\\b/g, \"I will\")\n    .replace(/\\bI'll\\b/g, \"I will\")\n    .replace(/\\bLet’s\\b/g, \"Let us\")\n    .replace(/\\bLet's\\b/g, \"Let us\")\n    .replace(/\\bwe’ll\\b/gi, \"we will\")\n    .replace(/\\bcan’t\\b/gi, \"cannot\")\n\n    // De-pronoun and make imperative\n    .replace(/^We need (to )?/i, \"\")\n    .replace(/^I will\\s+/i, \"\")\n    .replace(/^Let us\\s+/i, \"\")\n    .replace(/\\baim to\\b/gi, \"\")\n\n    // Phrasing upgrades\n    .replace(/\\bstart writing\\b/gi, \"begin writing\")\n    .replace(/\\bwrap up\\b/gi, \"complete work\")\n    .replace(/\\bso we can demo (it )?next week\\b/gi, \"for next week's demo\")\n    .replace(/\\bso we can demo\\b/gi, \"for demo\")\n    .replace(/\\bso we can\\b/gi, \"to\")\n\n    // Minor domain tweak\n    .replace(/\\bthe UI finalized\\b/gi, \"finalize UI design\")\n\n    // Spacing + punctuation\n    .replace(/\\s+\\./g, \".\")\n    .replace(/\\s{2,}/g, \" \")\n    .trim();\n\n  // Capitalize first letter\n  if (s.length) s = s.charAt(0).toUpperCase() + s.slice(1);\n  // Ensure trailing period\n  if (!/[.!?]$/.test(s)) s += \".\";\n\n  formatted.push(`${name} (${role}): ${s}`);\n}\n\nconst actionItemsText = formatted.length ? (\"Action Items:\\n\" + formatted.join(\"\\n\")) : \"Action Items:\\nNone.\";\n\nreturn [{\n  json: {\n    summary: $json[\"summary\"] || \"\",            // pass-through\n    action_items_array: formatted,              // array of nice lines\n    action_items_formatted: actionItemsText     // printable block\n  }\n}];\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -736,
-        288
-      ],
-      "id": "84faa095-a7fd-4068-a501-31a67db2dd42",
-      "name": "Code in JavaScript4"
-    },
-    {
-      "parameters": {
-        "jsCode": "const rawSummary = typeof $json[\"summary\"] === \"string\" ? $json[\"summary\"] : \"\";\nconst actionItems = Array.isArray($json[\"action_items_array\"]) ? $json[\"action_items_array\"] : [];\n\n// Extract attendees if the baseline includes Name (Role)\nconst attendeeMatches = rawSummary ? rawSummary.match(/([A-Z][a-z]+)\\s*\\(([^)]+)\\)/g) : null;\nconst attendees = attendeeMatches ? [...new Set(attendeeMatches)] : [];\nconst roles = {};\n(attendees || []).forEach(att => {\n  const m = att.match(/([A-Z][a-z]+)\\s*\\(([^)]+)\\)/);\n  if (m) roles[m[1]] = m[2];\n});\n\n// Build professional summary\nlet professional = \"MEETING SUMMARY\\n\\n\";\n\n// Purpose: generic but accurate; can be customized upstream if you pass a purpose field\nprofessional += \"Purpose:\\n\";\nprofessional += \"Summarize decisions, key discussion points, and next steps with clear ownership and timing.\\n\\n\";\n\n// Attendees\nif (Object.keys(roles).length) {\n  professional += \"Attendees:\\n\";\n  Object.entries(roles).forEach(([n, r]) => (professional += `- ${n} (${r})\\n`));\n  professional += \"\\n\";\n}\n\n// Key discussion points\nprofessional += \"Key Discussion Points:\\n\";\nif (rawSummary && rawSummary.trim()) {\n  const sentences = rawSummary\n    .replace(/\\s+\\./g, \".\")\n    .split(/(?<=\\.)\\s+/)\n    .map(s => s.trim())\n    .filter(Boolean)\n    .slice(0, 6); // cap for readability\n\n  if (sentences.length) {\n    professional += sentences.map(s => `- ${s}`).join(\"\\n\") + \"\\n\\n\";\n  } else {\n    professional += \"- No discussion captured.\\n\\n\";\n  }\n} else {\n  professional += \"- No discussion captured.\\n\\n\";\n}\n\n// Decisions (lightweight defaults; can be inferred upstream if you add logic)\nprofessional += \"Decisions:\\n\";\nprofessional += \"- Proceed with identified priority tasks; validate readiness ahead of dependent milestones.\\n\\n\";\n\n// Action items\nprofessional += \"Action Items:\\n\";\nprofessional += actionItems && actionItems.length ? actionItems.join(\"\\n\") : \"None.\";\nprofessional += \"\\n\\nNext Steps:\\n\";\nprofessional += \"- Confirm status against deadlines; escalate blockers early.\\n\";\n\nreturn [{\n  json: {\n    professional_summary: professional,\n    summary: rawSummary || \"\",\n    action_items: actionItems\n  }\n}];\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -528,
-        288
-      ],
-      "id": "0dd1d1fe-d6f9-4b50-84d4-0faf985e9e82",
-      "name": "Code in JavaScript5"
     },
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -1488,
+        400,
         224
       ],
-      "id": "50afd433-be57-43d5-8357-39ee68f7757f",
+      "id": "fa38f0f0-6854-4b99-9f9a-a13adf8f2b2c",
       "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Node: DEBUG Format Meeting Notes\nconst inputs = $input.all();\n\nconsole.log('=== DEBUG: MERGE NODE OUTPUT STRUCTURE ===');\nconsole.log('Number of inputs:', inputs.length);\n\n// Log the complete structure of each input\ninputs.forEach((input, index) => {\n  console.log(`=== Input ${index} ===`);\n  console.log('Type:', typeof input);\n  console.log('Keys:', Object.keys(input));\n  console.log('Full object:', JSON.stringify(input, null, 2));\n  console.log('================');\n});\n\n// Try multiple access methods\nlet originalNotes = '';\nlet summary = '';\n\n// Method 1: Direct access\nconsole.log('=== METHOD 1: Direct property access ===');\nif (inputs[0] && inputs[0].notes) {\n  originalNotes = inputs[0].notes;\n  console.log('✓ Found notes via inputs[0].notes');\n} else {\n  console.log('✗ inputs[0].notes: NOT FOUND');\n}\n\nif (inputs[1] && inputs[1].summary_text) {\n  summary = inputs[1].summary_text;\n  console.log('✓ Found summary via inputs[1].summary_text');\n} else {\n  console.log('✗ inputs[1].summary_text: NOT FOUND');\n}\n\n// Method 2: JSON access\nconsole.log('=== METHOD 2: JSON property access ===');\nif (inputs[0] && inputs[0].json && inputs[0].json.notes) {\n  originalNotes = inputs[0].json.notes;\n  console.log('✓ Found notes via inputs[0].json.notes');\n} else {\n  console.log('✗ inputs[0].json.notes: NOT FOUND');\n}\n\nif (inputs[1] && inputs[1].json && inputs[1].json.summary_text) {\n  summary = inputs[1].json.summary_text;\n  console.log('✓ Found summary via inputs[1].json.summary_text');\n} else {\n  console.log('✗ inputs[1].json.summary_text: NOT FOUND');\n}\n\n// Method 3: String search as last resort\nif (!originalNotes || !summary) {\n  console.log('=== METHOD 3: String search ===');\n  const inputString = JSON.stringify(inputs);\n  console.log('Full input string (first 1000 chars):', inputString.substring(0, 1000));\n  \n  // Search for notes\n  const notesMatch = inputString.match(/\"notes\":\"([^\"]+)\"/);\n  if (notesMatch) {\n    originalNotes = notesMatch[1].replace(/\\\\n/g, '\\n');\n    console.log('✓ Found notes via string search');\n  } else {\n    console.log('✗ Notes not found via string search');\n  }\n  \n  // Search for summary\n  const summaryMatch = inputString.match(/\"summary_text\":\"([^\"]+)\"/);\n  if (summaryMatch) {\n    summary = summaryMatch[1];\n    console.log('✓ Found summary via string search');\n  } else {\n    console.log('✗ Summary not found via string search');\n  }\n}\n\nconsole.log('=== FINAL RESULTS ===');\nconsole.log('Original notes found:', !!originalNotes);\nconsole.log('Summary found:', !!summary);\nconsole.log('Original notes length:', originalNotes.length);\nconsole.log('Summary length:', summary.length);\n\n// If we found data, format it\nlet formattedNotes = '';\nif (originalNotes) {\n  formattedNotes = originalNotes\n    .replace(/([A-Z][a-z]+ [A-Z][a-z]+:)/g, '\\n$1\\n')\n    .replace(/([A-Z][a-z]+:)/g, '\\n$1\\n')\n    .replace(/\\s+-\\s+/g, '\\n- ')\n    .replace(/\\n+/g, '\\n')\n    .trim();\n}\n\nreturn [\n  {\n    \"formatted_notes\": formattedNotes,\n    \"summary\": summary,\n    \"original_notes\": originalNotes,\n    \"debug_info\": {\n      \"inputs_count\": inputs.length,\n      \"notes_found\": !!originalNotes,\n      \"summary_found\": !!summary,\n      \"formatted_notes_length\": formattedNotes.length\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        352
+      ],
+      "id": "42e3c80c-a351-4cd9-98e7-f92d8b1e07d6",
+      "name": "Code in JavaScript"
     }
   ],
   "pinData": {},
   "connections": {
-    "HTTP Request1": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Edit Fields2": {
       "main": [
         [
@@ -176,33 +163,38 @@
             "node": "HTTP Request1",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
     },
     "Code in JavaScript3": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code in JavaScript4": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript5",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code in JavaScript5": {
       "main": [
         [
           {
@@ -223,16 +215,27 @@
           }
         ]
       ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "50722dfb-4f4d-425b-8bfe-9962534045d1",
+  "versionId": "96bac107-52c7-489c-97d9-cf5eefb413ff",
   "meta": {
     "instanceId": "2da04f59d427957dc124e28a94b37ab6ed3c2c81388b1955ce17aea435b6c511"
   },
-  "id": "cDpFhm5sP0KnpKaR",
+  "id": "wwOGRtIjgKslRihi",
   "tags": []
 }

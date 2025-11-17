@@ -1,0 +1,202 @@
+{
+  "name": "Feature 2 - Deadline & Milestone Alerts",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -176
+      ],
+      "id": "d5efd673-0b92-49df-8ad1-96f62e67b815",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nfunction parseDateTimeFromText(text) {\n  if (!text || typeof text !== 'string') {\n    return null;\n  }\n\n  const dateRegex = /(20\\d{2})[-\\/](0?[1-9]|1[0-2])[-\\/](0?[1-9]|[12]\\d|3[01])/;\n  const dateMatch = text.match(dateRegex);\n\n  if (!dateMatch) {\n    return null;\n  }\n\n  const year = dateMatch[1];\n  const month = dateMatch[2].padStart(2, '0');\n  const day = dateMatch[3].padStart(2, '0');\n\n  const timeRegex = /\\b([01]?\\d|2[0-3]):([0-5]\\d)\\b/;\n  const timeMatch = text.match(timeRegex);\n\n  let hour = '09';\n  let minute = '00';\n\n  if (timeMatch) {\n    hour = String(timeMatch[1]).padStart(2, '0');\n    minute = String(timeMatch[2]).padStart(2, '0');\n  }\n\n  const start = `${year}-${month}-${day}T${hour}:${minute}:00`;\n\n  const dt = new Date(start + 'Z'); \n  dt.setHours(dt.getHours() + 1);\n  const end = dt.toISOString().slice(0, 19); \n\n  return { start, end };\n}\n\n// 从 action item 文本中提炼一个比较干净的标题\nfunction extractTitle(text) {\n  if (!text) return 'Action item';\n\n  let title = text;\n\n  const markers = [' by ', ' before ', ' due '];\n  for (const m of markers) {\n    const idx = title.toLowerCase().indexOf(m.toLowerCase());\n    if (idx !== -1) {\n      title = title.slice(0, idx);\n      break;\n    }\n  }\n\n  return title.trim() || text;\n}\n\n\nconst input = items[0].json || {};\nconst output = input.output || {};\nconst meetingSummary = output.summary || '';\nconst actionItems = Array.isArray(output.action_items) ? output.action_items : [];\n\n// 构造结果\nconst results = [];\n\nfor (const rawItem of actionItems) {\n  // Feature 1 的 Code 里有一个 fallback：可能返回\n  // \"No actionable items identified in meeting notes\"\n  if (typeof rawItem !== 'string') continue;\n  if (rawItem.toLowerCase().includes('no actionable items identified')) {\n    continue;\n  }\n\n  const parsed = parseDateTimeFromText(rawItem);\n\n  if (!parsed) {\n    continue;\n  }\n\n  const title = extractTitle(rawItem);\n\n  results.push({\n    json: {\n      type: 'meeting_deadline',\n      title,\n      original_action: rawItem,\n      summary: meetingSummary,\n      start: parsed.start,\n      end: parsed.end,\n      source_workflow: input.workflow_name || 'WF_Summaries'\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        -96
+      ],
+      "id": "79436a65-01d5-46ce-b14c-3823049cbe78",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "start": "={{ $json[\"start\"] }}",
+        "end": "={{ $json[\"end\"] }}",
+        "additionalFields": {
+          "description": "={{ \"Meeting Summary:\\n\" + $json[\"summary\"] + \"\\n\\nAction Item:\\n\" + $json[\"original_action\"] }}\n",
+          "summary": "={{ $json[\"title\"] }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        -96
+      ],
+      "id": "5e36638a-23a5-4799-8ee2-67593bfac116",
+      "name": "Create an event"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        96
+      ],
+      "id": "9bea6fc6-b0a0-4c9d-95f2-fe0c62eb5ffb",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "timeMax": "={{ $now.plus({ day: 1 }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        96
+      ],
+      "id": "949da0c6-cda9-4ed9-b6c8-1e0f86aebad8",
+      "name": "Get many events"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nfunction normalizeDateTime(dt) {\n  if (!dt) return '';\n\n\n  if (typeof dt === 'string') {\n    if (dt.length >= 19) return dt.slice(0, 19);\n    return dt;\n  }\n\n  if (typeof dt === 'object') {\n    if (dt.dateTime) {\n      const s = dt.dateTime;\n      return s.length >= 19 ? s.slice(0, 19) : s;\n    }\n    if (dt.date) {\n      const date = dt.date;\n      return date + 'T09:00:00';\n    }\n  }\n\n  return '';\n}\n\nconst results = [];\n\nfor (const item of items) {\n  const ev = item.json || {};\n\n  const title = ev.summary || ev.title || 'Untitled deadline';\n  const startRaw = ev.start || {};\n  const endRaw = ev.end || {};\n  const description = ev.description || '';\n\n  const start = normalizeDateTime(startRaw);\n  const end = normalizeDateTime(endRaw);\n\n  // 组装提醒文案（你可以按需要改格式）\n  const lines = [\n    '⏰ Deadline aware',\n    `Title: ${title}`,\n    `Time: ${start || '(Not set)'}`\n  ];\n\n  if (description) {\n    lines.push('', 'Description：', description);\n  }\n\n  const message = lines.join('\\n');\n\n  results.push({\n    json: {\n      type: 'deadline_alert',\n      event_id: ev.id || null,\n      title,\n      start,\n      end,\n      description,\n      message\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        96
+      ],
+      "id": "eb1e2711-6153-4139-b833-1e5453a34034",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json[\"message\"] }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1408,
+        -32
+      ],
+      "id": "656fbf3a-38af-4c38-a48f-82167f762a76",
+      "name": "Send a text message",
+      "webhookId": "a8311973-52fb-467a-a81d-386b8a36a2ee"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json[\"message\"] }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1408,
+        192
+      ],
+      "id": "8dfe1faf-f8e5-48dc-88f9-6458f5bac3e7",
+      "name": "Send a message",
+      "webhookId": "1482fc35-b66e-44d9-9497-4c95509bcb82"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f9af9dd4-f3bf-459e-bfda-68df2ba32a9a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "adf6274bcd036cc69a63703ea8028bd0ec0c6a8ab35a2d9583da7da9b14c6bb0"
+  },
+  "id": "8psOfT1agyRh7YFL",
+  "tags": []
+}

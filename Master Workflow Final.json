@@ -493,7 +493,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer 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"
+              "value": "Bearer YOUR HF API KEY HERE"
             },
             {
               "name": "Content-Type",

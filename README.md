@@ -109,6 +109,9 @@ graph LR
 5. **HuggingFace API**
    - Access token from [HuggingFace](https://huggingface.co/settings/tokens)
 
+6. **VPN**
+   - Connect your device with any VPN to ensure you can access Gemini and run the workflow
+     
 ---
 
 ## 🚀 **Installation**

@@ -91,26 +91,30 @@ graph LR
 
 ### **Required Services**
 
-1. **n8n** (v1.119.1 or higher)
-   - Self-hosted or cloud instance
-   - [Installation Guide](https://docs.n8n.io/hosting/)
+1. **N8N** (v1.119.1 or higher)
+   - Download the N8N using either npx or npm.  
+   - [Installation Guide](https://docs.n8n.io/hosting/installation/npm/)
+    
+2. **Telegram App**
+   - Download the Telegram for [Windows](https://desktop.telegram.org/) or [Mac](https://macos.telegram.org/)
+   - Requires creating a new channel exclusively for the bot. 
 
 2. **Telegram Bot**
    - Bot Token from [@BotFather](https://t.me/BotFather)
-   - Channel/Group Chat ID
+   - Channel Chat ID
 
-3. **Google Calendar API**
+4. **Google Calendar API**
    - OAuth2 credentials
    - [Setup Guide](https://developers.google.com/calendar/api/quickstart)
 
-4. **Google Gemini API**
-   - API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+5. **Google Gemini API**
+   - API key from [Google AI Studio](https://aistudio.google.com/api-keys)
 
-5. **HuggingFace API**
+6. **HuggingFace API**
    - Access token from [HuggingFace](https://huggingface.co/settings/tokens)
 
-6. **VPN**
-   - Connect your device with any VPN to ensure you can access Gemini and run the workflow
+7. **VPN**
+   - Connect your device with any VPN to ensure you can access Gemini and run the workflow.
      
 ---
 
@@ -119,7 +123,7 @@ graph LR
 ### **Step 1: Import Workflow**
 
 1. Open your n8n instance
-2. Click **"Workflows"** → **"Import from File"**
+2. Click **"Create Workflows"** → **"Three dots in upper right corner"** → **"Import from File"**
 3. Select `Master_Workflow_Final.json`
 4. Click **"Import"**
 
@@ -242,6 +246,7 @@ Settings → Credentials → Add Credential → Google PaLM API (Gemini)
 1. Open workflow in n8n
 2. Click **"Active"** toggle (top right)
 3. Workflow is now running!
+4. You can start to text message in your Telegram channel 
 
 ### **Basic Commands**
 
@@ -259,41 +264,72 @@ Show me events for next week
 Delete the meeting on November 27
 Move the 3 PM meeting to 4 PM
 Check my schedule for December 15
+etc
 ```
 
 #### **Meeting Summary**
 ```
 Just paste your meeting notes (>200 characters) directly!
-Include keywords like: meeting, attendees, action items, deliverables
+Include keywords in a particular section, like: ACTION ITEMS, TASK ASSIGNMENTS, TO DO LIST, DELIVERABLES, NEXT STEPS, FOLLOW UP ITEMS. Follow up with several action items under the section to ensure the workflow can extract the action items and parse them to the calendar system. Try to specifically mention the date of your action items, either with or without time. Otherwise, the calendar will not consider it as an action item and won't input it in your calendar system. 
 ```
 
-**Example Meeting Notes:**
+**Example Meeting Notes Input:**
 ```
-Project Kickoff Meeting - November 25, 2025
+PRODUCT LAUNCH PLANNING MEETING
+Date: November 24, 2025
+Attendees: Sarah Chen (Product Manager), Mike Rodriguez (Engineering Lead), Lisa Wang (Marketing Director), James Taylor (QA Manager), Emma Davis (Design Lead)
 
-ATTENDEES:
-- John (Project Manager)
-- Sarah (Developer)
-- Mike (Designer)
+AGENDA:
+1. Q1 2026 Product Launch Timeline
+2. Resource Allocation
+3. Marketing Campaign Strategy
+4. Quality Assurance Protocol
 
-DISCUSSION:
-We discussed the new e-commerce platform redesign.
-Timeline is 3 months starting December 1st.
+DISCUSSION NOTES:
+
+Sarah opened the meeting by emphasizing the critical importance of our Q1 2026 product launch. The new AI-powered analytics dashboard must be ready for public release by March 15, 2026. We're currently 60% through development, but several key milestones remain.
+
+Mike presented the technical roadmap. The backend API integration is currently blocked due to third-party vendor delays. He stressed that we need to finalize the database schema by December 10, 2025, to stay on track. The team also needs to complete security penetration testing by January 20, 2026, before we can proceed to beta testing.
+
+Lisa discussed the marketing strategy. She proposed a soft launch campaign starting February 1, 2026, targeting our existing enterprise clients first. The marketing assets including video demos, case studies, and landing pages must be completed by January 15, 2026. She also mentioned we need approval from legal for all marketing materials by January 25, 2026.
+
+James raised concerns about the QA timeline. He emphasized that the team needs at least 3 weeks for comprehensive testing. The QA test plan must be approved by December 20, 2025. He also requested a dedicated staging environment by December 5, 2025, to begin preliminary testing.
+
+Emma presented the new UI mockups which received positive feedback. However, she noted that final design assets need to be handed off to engineering by December 15, 2025. She also mentioned conducting user testing sessions with 10 beta customers in mid-January.
+
+DECISIONS MADE:
+- Launch date confirmed: March 15, 2026
+- Weekly sync meetings every Monday at 10 AM starting December 2, 2025
+- Budget approved for additional QA resources
+- Marketing campaign budget increased by 20%
 
 ACTION ITEMS:
-- John to finalize requirements by December 5, 2025
-- Sarah to set up development environment by December 10, 2025 at 2 PM
-- Mike to create wireframes by December 15, 2025
+- Mike to finalize database schema by December 10, 2025
+- James to create and submit QA test plan by December 20, 2025
+- James to request staging environment setup by December 5, 2025
+- Emma to deliver final design assets by December 15, 2025
+- Lisa to complete all marketing materials by January 15, 2026
+- Lisa to obtain legal approval for marketing content by January 25, 2026
+- Mike to complete security penetration testing by January 20, 2026
+- Lisa to launch soft marketing campaign by February 1, 2026
+- Team to conduct user testing sessions on January 15, 2026 at 2 PM
+- Weekly sync meeting every Monday at 10 AM starting December 2, 2025
+- Final launch review meeting on March 10, 2026 at 9 AM
+- Post-launch retrospective meeting on March 20, 2026 at 3 PM
 
-NEXT STEPS:
-- Weekly check-ins every Monday at 10 AM starting December 9, 2025
+RISKS & CONCERNS:
+- Third-party API vendor delays could impact timeline
+- Limited QA resources for comprehensive testing
+- Tight deadline for marketing material creation
+- Dependency on legal approval process
+
 ```
 
 The bot will:
-1. Generate AI summary
-2. Extract 3+ action items
+1. Generate an AI summary
+2. Extract all of the action items
 3. Create calendar events automatically
-4. Send formatted response
+4. Send a formatted response
 
 ---
 
@@ -304,7 +340,7 @@ The bot will:
 | Node | Frequency | Purpose |
 |------|-----------|---------|
 | **Every 3 Seconds** | 3s | Poll Telegram for new messages |
-| **Daily Alerts** | 9 AM daily | Send TO-DO list reminder |
+| **Daily Alerts** | 9 AM daily | Send TO-DO list reminder for 365 days (You can change this in the calendar node) |
 
 ### **Main Flows**
 
@@ -356,10 +392,14 @@ Build TO-DO List → Send to Telegram
 2. Change `triggerAtHour: 9` to your preferred hour (0-23)
 3. Save workflow
 
+### **Change Total Number of Days on the TO DO LIST You Want to Display**
+1. Find node: **"📆 Get Upcoming Events"** after the **"⏰ TRIGGER: Daily Alerts"** node
+2. Change `Before: {{$now.plus({day: 365})}}` to `Before: {{$now.plus({day: YOUR PREFFERED AMOUNT OF DAYS})}}`  
+
 ### **Change Polling Frequency**
 
 1. Find node: **"Every 3 Seconds"**
-2. Change `secondsInterval: 3` to desired seconds
+2. Change `secondsInterval: 3` to the desired seconds
 3. ⚠️ Don't go below 2 seconds to avoid rate limits
 
 ### **Modify Telegram Channel**
@@ -387,7 +427,7 @@ Build TO-DO List → Send to Telegram
 1. Workflow is **Active** (toggle in top right)
 2. Telegram credentials are configured
 3. Bot token is correct
-4. Bot is added to your channel/group
+4. Bot is added to your channel
 
 **Debug:**
 - Manually execute "Every 3 Seconds" node
@@ -424,7 +464,7 @@ Build TO-DO List → Send to Telegram
 ### **Issue: Daily Reminder Not Sent**
 
 **Check:**
-1. Trigger time is in correct timezone
+1. Trigger time is in the correct timezone
 2. Workflow is active during trigger time
 3. Telegram channel ID is correct
 
@@ -434,23 +474,13 @@ Build TO-DO List → Send to Telegram
 
 ---
 
-### **Issue: Duplicate Messages**
+### **Issue: You want to send the previous input, but it cannot be run**
 
 **Solution:**
 1. Deactivate workflow
-2. Workflow Settings → Static Data → Clear Static Data
-3. Reactivate workflow
-
----
-
-### **Issue: AI Not Remembering Context**
-
-**Check:**
-1. Memory node is connected to AI Calendar
-2. Session ID is consistent (`tg_${chatId}`)
-
-**Reset Memory:**
-- Send `/start` command to create new session
+2. Find the **"Remove Duplicates"** node and delete it
+3. Create a new **"Remove Duplicates"** with the same settings as the previously **"Remove Duplicates"** deleted node
+4. Reactivate workflow
 
 ---
 
@@ -550,13 +580,11 @@ Google Gemini API: Via n8n integration
 
 Currently configured: **Asia/Hong_Kong (UTC+8)**
 
-Supported timezones: [Full list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
-
 ---
 
 **Last Updated:** November 25, 2025  
 **Workflow Version:** 1.0  
 **n8n Version:** 1.119.1  
-**Author:** Gerald Sch / Ral151
+**Author:** Gerald Benedict Setiawan 
 
 ---

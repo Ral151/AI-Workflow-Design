@@ -1,0 +1,1259 @@
+{
+  "name": "MAIN",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -3136,
+        288
+      ],
+      "id": "e755b9c9-621d-4e88-86f4-67ced061beb4",
+      "name": "Every 3 Seconds"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -3168,
+        528
+      ],
+      "id": "f5280686-a802-4502-b53f-dd7c818e0db9",
+      "name": "⏰ TRIGGER: Daily Alerts"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "🔄 Processing your meeting notes... This may take a moment.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -368,
+        256
+      ],
+      "id": "93553b6e-f1a6-4316-b262-b75bd4a1a647",
+      "name": "💬 Processing...",
+      "webhookId": "c79f3589-a445-45d5-99b6-b4ddc7ae254a",
+      "credentials": {
+        "telegramApi": {
+          "id": "IAo3DxNxKZBquxfz",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "parse_mode": "={{ $json.parse_mode }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1024,
+        64
+      ],
+      "id": "01da7c0a-b9a3-4833-8549-e4b7e557f106",
+      "name": "📤 Send Summary",
+      "webhookId": "1946cf67-8891-4726-a3fc-d44f5e4e9ded",
+      "credentials": {
+        "telegramApi": {
+          "id": "IAo3DxNxKZBquxfz",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format meeting summary for Telegram\nconst extractNode = $('✅ Extract Actions').first().json;\nconst chatId = $('Process Updates').first().json.chatId;\n\nconst summary = extractNode.summary || 'No summary available';\nconst actionItems = extractNode.action_items || [];\nconst totalActions = actionItems.length;\n\n// Format message\nlet message = `📝 *Meeting Summary*\\n\\n${summary}\\n\\n`;\n\nif (totalActions > 0) {\n  message += `✅ *Action Items* (${totalActions}):\\n`;\n  \n  // Show ALL action items (removed the limit)\n  for (let i = 0; i < actionItems.length; i++) {\n    const item = actionItems[i];\n    // Truncate long items to fit Telegram message limits\n    const displayItem = item.length > 150 ? item.substring(0, 147) + '...' : item;\n    message += `\\n${i + 1}. ${displayItem}`;\n  }\n  \n  message += `\\n\\n📅 *Calendar events created!*`;\n} else {\n  message += `ℹ️ No action items with dates found.`;\n}\n\nreturn [{\n  json: {\n    chatId: chatId.toString(),\n    text: message,\n    parse_mode: 'Markdown'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        64
+      ],
+      "id": "1b1d2424-4438-4c99-9153-5ab377e5e23d",
+      "name": "📊 Format Response"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "8c21b3ca39470f0512e0610d58c7d3fd72dfef6edbdc7eb1d93a62917bf580d7@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "TEST"
+        },
+        "start": "={{$json.start}}",
+        "end": "={{$json.end}}",
+        "additionalFields": {
+          "description": "={{\"Meeting Summary:\\n\" + $json.summary + \"\\n\\nAction Item:\\n\" + $json.original_action}}",
+          "summary": "={{$json.title}}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        240
+      ],
+      "id": "016f6a88-98b4-4b04-9689-1bf2d1d0a06c",
+      "name": "📆 Create Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "NlYg7Jw32kZ9jwiI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse dates from action items - SUPPORT BOTH TIMED & ALL-DAY EVENTS (TIMEZONE-AWARE)\nconst input = $input.all()[0].json;\nconst actionItems = input.action_items;\nconst summary = input.summary;\nconst chatId = $('Process Updates').first().json.chatId;\n\nconsole.log('=== PARSING DATES (TIMED & ALL-DAY) - TIMEZONE: Asia/Hong_Kong ===');\nconsole.log('Action items:', actionItems.length);\n\nconst now = new Date();\nconst currentYear = now.getFullYear();\nconst currentMonth = now.getMonth();\nconst currentDay = now.getDate();\n\n// TIMEZONE: Change this to your local timezone\nconst TIMEZONE = 'Asia/Hong_Kong';\nconst TIMEZONE_OFFSET = '+08:00';\n\nfunction parseDateFromText(text, idx) {\n  console.log(`\\n[${idx+1}] Processing: \"${text.substring(0, 80)}...\"`);\n  \n  // Pattern 1: Month + Day + Year (optional)\n  const monthNameRegex = /(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(\\d{1,2})(?:,?\\s+(\\d{4}))?/i;\n  const dateMatch = text.match(monthNameRegex);\n  \n  if (!dateMatch) {\n    console.log(`  ✗ No date found`);\n    return null;\n  }\n  \n  const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', \n                      'july', 'august', 'september', 'october', 'november', 'december'];\n  const monthName = dateMatch[1].toLowerCase();\n  const day = parseInt(dateMatch[2]);\n  let year = dateMatch[3] ? parseInt(dateMatch[3]) : null;\n  \n  const monthIndex = monthNames.indexOf(monthName);\n  \n  if (monthIndex === -1) {\n    console.log(`  ✗ Invalid month name`);\n    return null;\n  }\n  \n  // Smart year detection\n  if (!year) {\n    if (monthIndex < currentMonth) {\n      year = currentYear + 1;\n    } else if (monthIndex === currentMonth) {\n      year = day < currentDay ? currentYear + 1 : currentYear;\n    } else {\n      year = currentYear;\n    }\n  }\n  \n  console.log(`  → Date: ${monthName} ${day}, ${year}`);\n  \n  // ✅ CHECK FOR TIME in the action item text\n  // Pattern: \"at 2 PM\", \"at 10:30 AM\", \"at 14:00\", \"@ 3pm\"\n  const timeRegex = /(?:at|@)\\s*(\\d{1,2})(?::(\\d{2}))?\\s*(AM|PM|am|pm)?/i;\n  const timeMatch = text.match(timeRegex);\n  \n  if (timeMatch) {\n    // TIME FOUND - Create timed event\n    let hours = parseInt(timeMatch[1]);\n    const minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0;\n    const meridiem = timeMatch[3] ? timeMatch[3].toUpperCase() : null;\n    \n    // Convert to 24-hour format\n    if (meridiem === 'PM' && hours !== 12) {\n      hours += 12;\n    } else if (meridiem === 'AM' && hours === 12) {\n      hours = 0;\n    }\n    \n    console.log(`  ✓ TIME FOUND: ${hours}:${minutes.toString().padStart(2, '0')}`);\n    \n    // Format date/time strings for Google Calendar (RFC3339 format with timezone)\n    const startDateTime = `${year}-${(monthIndex + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00${TIMEZONE_OFFSET}`;\n    \n    // End time = rest of the day (11:59 PM same day)\n    const endDateTime = `${year}-${(monthIndex + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T23:59:00${TIMEZONE_OFFSET}`;\n    \n    console.log(`  → Start: ${startDateTime}`);\n    console.log(`  → End: ${endDateTime}`);\n    \n    return {\n      start: startDateTime,\n      end: endDateTime,\n      isAllDay: false,\n      hasTime: true\n    };\n  } else {\n    // NO TIME - Create all-day event\n    console.log(`  ✓ NO TIME - Creating all-day event`);\n    \n    const dateOnly = `${year}-${(monthIndex + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;\n    \n    console.log(`  → All-day: ${dateOnly}`);\n    \n    return {\n      start: dateOnly,\n      end: dateOnly,\n      isAllDay: true,\n      hasTime: false\n    };\n  }\n}\n\nconst results = [];\nlet timedCount = 0;\nlet allDayCount = 0;\nlet skippedCount = 0;\n\nfor (let i = 0; i < actionItems.length; i++) {\n  const actionText = actionItems[i];\n  const dateInfo = parseDateFromText(actionText, i);\n  \n  if (dateInfo) {\n    const title = actionText.length > 100 \n      ? actionText.substring(0, 97) + '...'\n      : actionText;\n    \n    // Use different emoji based on event type\n    const emoji = dateInfo.hasTime ? '⏰' : '📋';\n    \n    results.push({\n      json: {\n        title: `${emoji} ${title}`,\n        start: dateInfo.start,\n        end: dateInfo.end,\n        summary: summary,\n        original_action: actionText,\n        is_all_day: dateInfo.isAllDay,\n        chatId: chatId\n      }\n    });\n    \n    if (dateInfo.hasTime) {\n      timedCount++;\n    } else {\n      allDayCount++;\n    }\n  } else {\n    skippedCount++;\n  }\n}\n\nconsole.log(`\\n========================================`);\nconsole.log(`⏰ TIMED EVENTS: ${timedCount}`);\nconsole.log(`📋 ALL-DAY EVENTS: ${allDayCount}`);\nconsole.log(`✗ SKIPPED (no date): ${skippedCount}`);\nconsole.log(`========================================\\n`);\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        240
+      ],
+      "id": "d2710e3f-4304-490e-ab6e-9e1765c6ecd4",
+      "name": "📅 Parse Dates"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract action items from SPECIFIC sections ONLY - PRESERVE TIME FORMAT\nconst input = $input.all()[0].json;\n\nconst formattedNotes = input.formatted_notes;\nconst summary = input.summary;\n\nconsole.log('=== EXTRACTING ACTION ITEMS (STRICT MODE - PRESERVE TIME) ===');\nconsole.log('Notes length:', formattedNotes.length);\n\n// ONLY extract from these specific sections\nconst actionSectionPatterns = [\n  /ACTION ITEMS?:\\s*([\\s\\S]*?)(?=\\n\\n[A-Z]{2,}|$)/i,\n  /TASK ASSIGNMENTS?:\\s*([\\s\\S]*?)(?=\\n\\n[A-Z]{2,}|$)/i,\n  /FOLLOW[-\\s]?UP ITEMS?:\\s*([\\s\\S]*?)(?=\\n\\n[A-Z]{2,}|$)/i,\n  /TO[-\\s]?DO LIST:\\s*([\\s\\S]*?)(?=\\n\\n[A-Z]{2,}|$)/i,\n  /DELIVERABLES?:\\s*([\\s\\S]*?)(?=\\n\\n[A-Z]{2,}|$)/i,\n  /NEXT STEPS?:\\s*([\\s\\S]*?)(?=\\n\\n[A-Z]{2,}|$)/i\n];\n\nlet actionItems = [];\n\n// Try each section pattern\nfor (const pattern of actionSectionPatterns) {\n  const sectionMatch = formattedNotes.match(pattern);\n  \n  if (sectionMatch) {\n    const sectionName = sectionMatch[0].split(':')[0].trim();\n    const sectionContent = sectionMatch[1];\n    console.log(`\\n✓ Found section: \"${sectionName}\"`);\n    console.log(`  Content length: ${sectionContent.length} chars`);\n    \n    // Split by newlines and process each line\n    const lines = sectionContent.split('\\n');\n    let itemsFound = 0;\n    \n    for (const line of lines) {\n      const trimmed = line.trim();\n      \n      // Skip empty lines or very short lines\n      if (!trimmed || trimmed.length < 10) continue;\n      \n      // Check if line starts with bullet point or dash\n      if (trimmed.match(/^[-•*]\\s+/)) {\n        const cleaned = trimmed.replace(/^[-•*]\\s+/, '').trim();\n        \n        if (cleaned.length > 10) {\n          actionItems.push(cleaned);\n          itemsFound++;\n          console.log(`    ${itemsFound}. ${cleaned.substring(0, 60)}...`);\n        }\n      }\n      // Check for numbered items (1., 2., etc.)\n      else if (trimmed.match(/^\\d+\\.\\s+/)) {\n        const cleaned = trimmed.replace(/^\\d+\\.\\s+/, '').trim();\n        \n        if (cleaned.length > 10) {\n          actionItems.push(cleaned);\n          itemsFound++;\n          console.log(`    ${itemsFound}. ${cleaned.substring(0, 60)}...`);\n        }\n      }\n    }\n    \n    console.log(`  Total items from this section: ${itemsFound}`);\n  }\n}\n\n// Remove duplicates (case-insensitive comparison)\nconst uniqueItems = [];\nconst seenItems = new Set();\n\nfor (const item of actionItems) {\n  const normalized = item.toLowerCase().replace(/\\s+/g, ' ').trim();\n  if (!seenItems.has(normalized)) {\n    uniqueItems.push(item);\n    seenItems.add(normalized);\n  }\n}\n\nactionItems = uniqueItems;\n\n// ✅ CLEANUP: Remove section headers and pollution (PRESERVE TIME FORMAT!)\nconsole.log(`\\n${'='.repeat(50)}`);\nconsole.log(`🧹 CLEANING UP ${actionItems.length} ITEMS`);\nconsole.log(`${'='.repeat(50)}`);\n\nactionItems = actionItems.map((item, index) => {\n  const original = item;\n  \n  // Check if item contains time format before cleaning\n  const hasTime = item.match(/\\d{1,2}(?::\\d{2})?\\s*(?:AM|PM|am|pm)/i);\n  if (hasTime) {\n    console.log(`  [${index + 1}] ⏰ Contains time: ${hasTime[0]}`);\n  }\n  \n  let cleaned = item\n    // Remove section headers with anything after them (but not time indicators!)\n    .replace(/\\s{2,}(?!AM|PM|am|pm)[A-Z][A-Z\\s]+:.*$/gi, '')\n    // Remove standalone section markers at the end (but not AM/PM)\n    .replace(/\\s+(?!AM|PM|am|pm)[A-Z][A-Z\\s]+\\s*$/i, '')\n    .trim();\n  \n  // Verify time is still there after cleaning\n  const timeAfter = cleaned.match(/\\d{1,2}(?::\\d{2})?\\s*(?:AM|PM|am|pm)/i);\n  if (hasTime && !timeAfter) {\n    console.log(`  ⚠️ WARNING: Time was removed during cleanup!`);\n    console.log(`    Original: \"${original}\"`);\n    console.log(`    Cleaned: \"${cleaned}\"`);\n    // Restore original if time was lost\n    cleaned = original;\n  }\n  \n  if (original !== cleaned) {\n    console.log(`  [${index + 1}] Cleaned:`);\n    console.log(`    Before: \"${original.substring(0, 80)}...\"`);\n    console.log(`    After:  \"${cleaned.substring(0, 80)}...\"`);\n  }\n  \n  return cleaned;\n});\n\n// ✅ FILTER: Remove items that are clearly not action items\nconsole.log(`\\n${'='.repeat(50)}`);\nconsole.log(`🔍 FILTERING OUT NON-ACTION ITEMS`);\nconsole.log(`${'='.repeat(50)}`);\n\nactionItems = actionItems.filter((item, index) => {\n  const lower = item.toLowerCase();\n  \n  // Skip if it starts with common non-action phrases\n  const invalidStarts = [\n    'competition with',\n    'weather concerns',\n    'limited ',\n    'short timeline',\n    'need more',\n    'dependency on',\n    'third-party',\n    'tight deadline',\n    'concerns about',\n    'risks include',\n    'blocker:',\n    'obstacle:',\n    'challenge:',\n    'insufficient',\n    'lack of',\n    'not enough'\n  ];\n  \n  for (const phrase of invalidStarts) {\n    if (lower.startsWith(phrase)) {\n      console.log(`  ✗ [${index + 1}] Filtered: \"${item.substring(0, 70)}...\"`);\n      console.log(`      Reason: Starts with \"${phrase}\"`);\n      return false;\n    }\n  }\n  \n  // Skip if it contains section header keywords\n  const sectionKeywords = [\n    'checkpoints:',\n    'project requirements:',\n    'deliverables:',\n    'next steps:',\n    'follow-up items:',\n    'obstacles identified:',\n    'risks:',\n    'concerns:',\n    'challenges:'\n  ];\n  \n  for (const keyword of sectionKeywords) {\n    if (lower.includes(keyword)) {\n      console.log(`  ✗ [${index + 1}] Filtered: \"${item.substring(0, 70)}...\"`);\n      console.log(`      Reason: Contains section header \"${keyword}\"`);\n      return false;\n    }\n  }\n  \n  // Skip if too short\n  if (item.length < 15) {\n    console.log(`  ✗ [${index + 1}] Filtered: \"${item}\"`);\n    console.log(`      Reason: Too short (${item.length} chars)`);\n    return false;\n  }\n  \n  // Skip if it's just a section header remnant\n  if (lower.match(/^(risks?|concerns?|obstacles?|blockers?|challenges?|issues?)\\s*$/i)) {\n    console.log(`  ✗ [${index + 1}] Filtered: \"${item.substring(0, 70)}...\"`);\n    console.log(`      Reason: Section header remnant`);\n    return false;\n  }\n  \n  // ✅ MUST contain an action verb OR a date\n  const hasActionVerb = lower.match(/\\b(to\\s+(finalize|create|submit|request|deliver|complete|obtain|launch|conduct|review|send|update|prepare|schedule|organize|coordinate|develop|implement|test|deploy|design|build|analyze|present|approve|sign|configure|setup|install))/i);\n  \n  const hasDate = lower.match(/\\b(january|february|march|april|may|june|july|august|september|october|november|december)\\s+\\d{1,2},?\\s+\\d{4}/i) ||\n                  lower.match(/\\b(by|on|before|until|starting)\\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i);\n  \n  if (!hasActionVerb && !hasDate) {\n    console.log(`  ✗ [${index + 1}] Filtered: \"${item.substring(0, 70)}...\"`);\n    console.log(`      Reason: No action verb or specific date found`);\n    return false;\n  }\n  \n  return true;\n});\n\nconsole.log(`\\n${'='.repeat(50)}`);\nconsole.log(`✅ FINAL COUNT: ${actionItems.length} clean action items`);\nconsole.log(`${'='.repeat(50)}\\n`);\n\n// Final verification: Log items with time\nconsole.log('\\n⏰ ITEMS WITH TIME:');\nactionItems.forEach((item, idx) => {\n  const timeMatch = item.match(/\\d{1,2}(?::\\d{2})?\\s*(?:AM|PM|am|pm)/i);\n  if (timeMatch) {\n    console.log(`  [${idx + 1}] Time: ${timeMatch[0]} - \"${item.substring(0, 60)}...\"`);\n  }\n});\n\nreturn [{\n  json: {\n    summary: summary,\n    action_items: actionItems,\n    formatted_notes: formattedNotes,\n    total_actions: actionItems.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        64
+      ],
+      "id": "212d711c-80f3-4311-a61a-eed3a2bf5d4f",
+      "name": "✅ Extract Actions"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputs = $input.all();\n\nconsole.log('=== MERGE NODE OUTPUT ===');\nconsole.log('Inputs:', inputs.length);\n\nlet originalNotes = '';\nlet summary = '';\n\n// Try to get notes from first input\nif (inputs[0]) {\n  originalNotes = inputs[0].json?.notes || inputs[0].notes || '';\n  console.log('✓ Found notes, length:', originalNotes.length);\n}\n\n// Try to get summary from second input\nif (inputs[1]) {\n  const j = inputs[1].json || inputs[1];\n  let s = '';\n\n  // Huggingface\n  if (typeof j.summary_text === 'string' && j.summary_text.length > 0) {\n    s = j.summary_text;\n  } else if (Array.isArray(j.output)) {\n    // GPT\n    // j.output[0].content[0].text\n    const firstMsg = j.output[0];\n    if (firstMsg && Array.isArray(firstMsg.content)) {\n      const firstContent = firstMsg.content[0];\n      if (firstContent && typeof firstContent.text === 'string') {\n        s = firstContent.text;\n      }\n    }\n  }\n\n  summary = s || '';\n  console.log('✓ Found summary, length:', summary.length);\n}\n\n\n// Format notes\nlet formattedNotes = originalNotes\n  .replace(/([A-Z][a-z]+ [A-Z][a-z]+:)/g, '\\n$1\\n')\n  .replace(/([A-Z][a-z]+:)/g, '\\n$1\\n')\n  .replace(/\\s+-\\s+/g, '\\n- ')\n  .replace(/\\n+/g, '\\n')\n  .trim();\n\nreturn [{\n  json: {\n    formatted_notes: formattedNotes,\n    summary: summary,\n    original_notes: originalNotes\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        64
+      ],
+      "id": "b1eb0a2b-d570-471a-b965-53b8efe6d34d",
+      "name": "📋 Format"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        176,
+        64
+      ],
+      "id": "dbe87ec3-bcaa-4cba-9996-ce04d99892df",
+      "name": "🔀 Merge"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        512
+      ],
+      "id": "4c164c85-8e97-4734-97b8-15120a812a6e",
+      "name": "Send Calendar",
+      "webhookId": "6c69fc3a-a3a1-4826-9a10-739a2ac497e8",
+      "credentials": {
+        "telegramApi": {
+          "id": "IAo3DxNxKZBquxfz",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const ai = $input.first().json;\nconst parsed = $('Process Updates').first().json;\n\nlet msg = ai.output || ai.text || 'Done!';\n\n// Fix literal \\n to actual newlines\nmsg = msg.replace(/\\\\n/g, '\\n');\n\n// Replace Markdown-breaking asterisks with bullets\nmsg = msg.replace(/^\\* /gm, '• ');\n\n// Escape other Markdown special characters that might cause issues\nfunction escapeMarkdown(text) {\n  return text\n    .replace(/([_\\[\\]()~`>#+\\-=|{}.!])/g, '\\\\$1');\n}\n\n// Don't escape if message already has emoji at start\nif (!msg.match(/^[\\u{1F300}-\\u{1F9FF}]/u)) {\n  if (msg.toLowerCase().includes('created')) msg = '✅ ' + msg;\n  else if (msg.toLowerCase().includes('deleted')) msg = '🗑️ ' + msg;\n  else if (msg.toLowerCase().includes('updated')) msg = '✏️ ' + msg;\n  else if (msg.toLowerCase().includes('events')) msg = '📅 ' + msg;\n}\n\n// Apply Markdown escaping (but preserve emojis and bullets)\nconst lines = msg.split('\\n');\nconst escapedLines = lines.map(line => {\n  // Don't escape lines that start with emoji or bullet\n  if (line.match(/^[\\u{1F300}-\\u{1F9FF}•]/u)) {\n    return line;\n  }\n  return escapeMarkdown(line);\n});\nmsg = escapedLines.join('\\n');\n\nconsole.log('Final message:', msg);\n\nreturn [{\n  json: {\n    chatId: parsed.chatId.toString(),\n    text: msg,\n    parse_mode: 'Markdown'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        512
+      ],
+      "id": "51edbfc6-aa75-48b2-b862-bb455be6ed6e",
+      "name": "Format Calendar"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -432,
+        736
+      ],
+      "id": "5648bfb2-9820-45e0-be50-4c894fb9ae45",
+      "name": "Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.input }}",
+        "options": {
+          "systemMessage": "Today's date is 27 November, 2025.\\n\\nYou're an AI Calendar Assistant with Google Calendar access.\\n\\nUse tools to create, delete, update, check, and get events.\\n\\nBe friendly, concise. Use emojis: ✅❌🗑️✏️\\n\\nConfirm all actions."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -448,
+        528
+      ],
+      "id": "56bf80b3-097b-4209-9c38-6252dfe9668e",
+      "name": "AI Calendar"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "parse_mode": "={{ $json.parse_mode }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -544,
+        352
+      ],
+      "id": "94ca02c1-65e3-40be-86bd-540812291de0",
+      "name": "Send Direct",
+      "webhookId": "d747844b-9f1d-4622-a185-b967fdff6c67",
+      "credentials": {
+        "telegramApi": {
+          "id": "IAo3DxNxKZBquxfz",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.skipAI }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "id": "48220120-7af8-48da-95ce-cbb3c095674f"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        432
+      ],
+      "id": "ed101621-f4a1-45f2-a30b-a4e641e704c5",
+      "name": "Route Commands"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.isMeetingNotes }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "id": "meeting-notes-check"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        304
+      ],
+      "id": "f79597a3-99dc-488a-b8f6-01b693d8c096",
+      "name": "🔀 Meeting Notes?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.first().json;\n\n// Check if we got valid updates\nif (! res.ok || !res.result) {\n  console.log('No valid response');\n  return [];\n}\n\nconst updates = res.result;\n\n// If no messages, return empty\nif (updates.length === 0) {\n  console. log('No new messages');\n  return [];\n}\n\nconsole.log('📬 Processing', updates. length, 'updates');\n\n// Process messages\nconst out = [];\n\nfor (const u of updates) {\n  const m = u.message || u.channel_post;\n  \n  if (!m) continue;\n  \n  const chatId = m.chat.id;\n  const usr = m.from?. username || m.chat.title || 'User';\n  \n  // ✅ SIMPLIFIED: Check if document exists\n  if (m.document) {\n    const doc = m.document;\n    const fileName = doc.file_name || 'unknown';\n    const fileId = doc.file_id;\n    const mimeType = doc.mime_type || '';\n    const fileSize = doc. file_size || 0;\n    \n    console.log(`📎 File received: ${fileName} (${fileSize} bytes)`);\n    \n    // Check file size (max 20MB)\n    if (fileSize > 20 * 1024 * 1024) {\n      out.push({\n        json: {\n          chatId: chatId,\n          messageText: '/error',\n          text: '❌ File too large (max 20MB)\\n\\nPlease upload a smaller file.',\n          parse_mode: 'Markdown',\n          skipAI: true,\n          isMeetingNotes: false,\n          isDocument: false\n        }\n      });\n      continue;\n    }\n    \n    // ✅ If document exists, set isDocument: true (no MIME type check!)\n    console.log(`✅ Document detected - isDocument: true`);\n    \n    out.push({\n      json: {\n        chatId: chatId,\n        username: usr,\n        messageText: `[FILE: ${fileName}]`,\n        fileId: fileId,\n        fileName: fileName,\n        mimeType: mimeType,\n        fileSize: fileSize,\n        fileType: fileName.toLowerCase().endsWith('.pdf') ? 'pdf' : 'docx',\n        isDocument: true,  // ✅ Always true if document exists\n        sessionId: `tg_${chatId}`,\n        skipAI: false,\n        isMeetingNotes: false\n      }\n    });\n    continue;\n  }\n  \n  // ✅ PRESERVED: Existing text message handling\n  const txt = m.text?.trim();\n  \n  if (!txt) continue;\n  \n  console.log('💬 Message:', txt. substring(0, 100));\n  \n  // Handle /start\n  if (txt === '/start' || txt.startsWith('/start@')) {\n    out.push({\n      json: {\n        chatId: chatId,\n        messageText: txt,\n        text: '👋 *Welcome to Calendar Bot!*\\n\\nI help manage your Google Calendar and summarize meetings.\\n\\n*Features:*\\n• 📅 \"Schedule meeting tomorrow 3 PM\"\\n• 📝 Paste meeting notes to get summary + calendar events\\n• 📄 Upload PDF/DOCX files for automatic processing\\n• 🗑️ \"Delete meeting on Nov 27\"\\n• /help\\n\\nType naturally!  💬',\n        parse_mode: 'Markdown',\n        skipAI: true,\n        isMeetingNotes: false,\n        isDocument: false\n      }\n    });\n    continue;\n  }\n  \n  // Handle /help\n  if (txt === '/help' || txt.startsWith('/help@')) {\n    out.push({\n      json: {\n        chatId: chatId,\n        messageText: txt,\n        text: '🤖 *Help*\\n\\n*📝 Calendar:*\\n• Schedule meeting tomorrow 9 AM\\n• What\\'s on my calendar?\\n• Delete meeting on Nov 27\\n• Move meeting to 4 PM\\n\\n*📋 Meeting Summary:*\\n• Paste meeting notes (>200 chars)\\n• Upload PDF or DOCX files\\n• Get AI summary\\n• Auto-create calendar events\\n\\nType naturally! 💬',\n        parse_mode: 'Markdown',\n        skipAI: true,\n        isMeetingNotes: false,\n        isDocument: false\n      }\n    });\n    continue;\n  }\n  \n  // Skip other commands\n  if (txt.startsWith('/')) continue;\n  \n  // ✅ PRESERVED: Detect meeting notes (long message with keywords)\n  const isMeetingNotes = txt.length > 200 && (\n    txt.toLowerCase(). includes('meeting') ||\n    txt. toLowerCase().includes('attendees') ||\n    txt.toLowerCase().includes('action item') ||\n    txt. toLowerCase().includes('deliverable') ||\n    txt.toLowerCase().includes('next step') ||\n    txt. toLowerCase().includes('project') ||\n    txt.toLowerCase().includes('discussion')\n  );\n  \n  if (isMeetingNotes) {\n    console.log('📝 Detected MEETING NOTES (length:', txt.length, ')');\n    out.push({\n      json: {\n        chatId: chatId,\n        username: usr,\n        messageText: txt,\n        notes: txt,\n        sessionId: `tg_${chatId}`,\n        skipAI: false,\n        isMeetingNotes: true,\n        isDocument: false\n      }\n    });\n  } else {\n    // ✅ PRESERVED: Regular calendar command\n    console.log('📅 Regular calendar command');\n    out.push({\n      json: {\n        chatId: chatId,\n        username: usr,\n        messageText: txt,\n        input: txt,\n        sessionId: `tg_${chatId}`,\n        skipAI: false,\n        isMeetingNotes: false,\n        isDocument: false\n      }\n    });\n  }\n}\n\nconsole.log('📤 Returning', out.length, 'messages');\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2416,
+        288
+      ],
+      "id": "b908fa95-6732-4b53-9ef2-2cb5c5e3f31b",
+      "name": "Process Updates"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot8218962156:AAFq0DsbA9_Npqggny7AW-ser2CvG9_9zbs/getUpdates",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "telegramApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "offset",
+              "value": "={{ $json.offset }}"
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            },
+            {
+              "name": "timeout",
+              "value": "30"
+            },
+            {
+              "name": "allowed_updates",
+              "value": "[\"message\",\"channel_post\"]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2624,
+        288
+      ],
+      "id": "24ad851f-c085-4575-a00a-ded25a291f61",
+      "name": "Get Updates",
+      "credentials": {
+        "telegramApi": {
+          "id": "IAo3DxNxKZBquxfz",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get saved offset\nlet offset = 0;\n\ntry {\n  if (typeof $workflow !== 'undefined' && $workflow.staticData !== undefined) {\n    offset = $workflow.staticData.telegramOffset || 0;\n    console.log('📍 Using offset:', offset);\n  }\n} catch (e) {\n  console.log('⚠️ Error:', e.message);\n}\n\nreturn [{\n  json: {\n    offset: offset\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2800,
+        288
+      ],
+      "id": "37b4ad51-154d-4d97-b5fa-54772193de41",
+      "name": "Set Offset"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot8218962156:AAFq0DsbA9_Npqggny7AW-ser2CvG9_9zbs/getUpdates",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "offset",
+              "value": "-1"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2944,
+        288
+      ],
+      "id": "edafdf94-3b4c-46a3-872b-b9980b042c37",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "chatId": "-1003487374430",
+        "text": "={{ $json[\"message\"] }}",
+        "additionalFields": {
+          "disable_web_page_preview": true,
+          "parse_mode": "={{$json.parse_mode}}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2496,
+        528
+      ],
+      "id": "dd3f7594-95c7-4915-a57b-c8a9b8b9b039",
+      "name": "📱 Send Telegram Alert",
+      "webhookId": "master-telegram-001",
+      "credentials": {
+        "telegramApi": {
+          "id": "IAo3DxNxKZBquxfz",
+          "name": "Telegram account"
+        }
+      },
+      "notes": "⚠️ CREDENTIAL NEEDED: Telegram Bot Token\nGet this from your team members"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Consolidate alerts - Show ALL upcoming events (meetings AND tasks)\nconst items = $input.all();\n\nconsole.log(`=== UPCOMING EVENTS & TASKS ===`);\nconsole.log(`Processing ${items.length} events`);\n\nconst now = new Date();\n\nfunction normalizeDateTime(dt) {\n  if (!dt) return '';\n\n  if (typeof dt === 'string') {\n    if (dt.length >= 19) return dt.slice(0, 19);\n    return dt;\n  }\n\n  if (typeof dt === 'object') {\n    if (dt.dateTime) {\n      const s = dt.dateTime;\n      return s.length >= 19 ? s.slice(0, 19) : s;\n    }\n    if (dt.date) {\n      return dt.date + 'T09:00:00';\n    }\n  }\n\n  return '';\n}\n\nfunction isAllDayEvent(startRaw) {\n  if (typeof startRaw === 'object' && startRaw.date) {\n    return true;\n  }\n  return false;\n}\n\nfunction formatDateTime(dateStr, isAllDay, showTime = false) {\n  if (!dateStr) return 'Unknown';\n  \n  const date = new Date(dateStr);\n  \n  if (isAllDay || !showTime) {\n    // Just show date\n    return date.toLocaleDateString('en-US', { \n      weekday: 'short', \n      year: 'numeric', \n      month: 'short', \n      day: 'numeric' \n    });\n  } else {\n    // Show date + time\n    return date.toLocaleString('en-US', { \n      weekday: 'short', \n      month: 'short', \n      day: 'numeric',\n      hour: 'numeric', \n      minute: '2-digit',\n      hour12: true\n    });\n  }\n}\n\nfunction getTimeUntil(dateStr) {\n  if (!dateStr) return '';\n  \n  const target = new Date(dateStr);\n  const diffMs = target - now;\n  \n  if (diffMs < 0) return '⚠️ OVERDUE';\n  \n  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));\n  const diffDays = Math.floor(diffHours / 24);\n  const diffWeeks = Math.floor(diffDays / 7);\n  const diffMonths = Math.floor(diffDays / 30);\n  \n  if (diffHours < 1) return '🚨 Less than 1 hour';\n  if (diffHours < 24) return `🚨 ${diffHours} hour${diffHours > 1 ? 's' : ''}`;\n  if (diffDays === 1) return `⚠️ Tomorrow`;\n  if (diffDays < 7) return `⚠️ ${diffDays} day${diffDays > 1 ? 's' : ''}`;\n  if (diffWeeks < 4) return `📅 ${diffWeeks} week${diffWeeks > 1 ? 's' : ''}`;\n  if (diffMonths < 12) return `📅 ${diffMonths} month${diffMonths > 1 ? 's' : ''}`;\n  \n  return `📅 ${Math.floor(diffDays / 365)} year${Math.floor(diffDays / 365) > 1 ? 's' : ''}`;\n}\n\nfunction getUrgencyLevel(dateStr) {\n  if (!dateStr) return 'low';\n  \n  const target = new Date(dateStr);\n  const diffHours = (target - now) / (1000 * 60 * 60);\n  \n  if (diffHours < 0) return 'overdue';\n  if (diffHours <= 24) return 'urgent';\n  if (diffHours <= 168) return 'soon'; // 7 days\n  return 'upcoming';\n}\n\n// Separate collections\nconst tasks = {\n  overdue: [],\n  urgent: [],\n  soon: [],\n  upcoming: []\n};\n\nconst meetings = {\n  urgent: [],\n  soon: []\n};\n\nlet totalTasks = 0;\nlet totalMeetings = 0;\n\nfor (const item of items) {\n  const ev = item.json || {};\n\n  const title = ev.summary || ev.title || 'Untitled';\n  const startRaw = ev.start || {};\n  const description = ev.description || '';\n  const eventId = ev.id || null;\n\n  const start = normalizeDateTime(startRaw);\n  \n  if (!start) {\n    console.log(`Skipping event without start: ${title}`);\n    continue;\n  }\n\n  const isAllDay = isAllDayEvent(startRaw);\n  const urgency = getUrgencyLevel(start);\n  \n  // Remove emoji if present\n  const cleanTitle = title.replace(/^📋\\s*/, '');\n  \n  // LOGIC: Decide if it's a task or meeting\n  let isTask = false;\n  let isMeeting = false;\n  \n  if (isAllDay) {\n    // All-day events are always tasks\n    isTask = true;\n  } else {\n    // Timed events (dateTime):\n    // - If in next 7 days AND has specific time (HH:MM not 00:00) → MEETING\n    // - Otherwise → TASK (deadline with date placeholder)\n    \n    const eventDate = new Date(start);\n    const hasSpecificTime = !(eventDate.getHours() === 0 && eventDate.getMinutes() === 0);\n    \n    if ((urgency === 'urgent' || urgency === 'soon') && hasSpecificTime) {\n      isMeeting = true;\n    } else {\n      // Far future or midnight time → treat as TASK\n      isTask = true;\n    }\n  }\n  \n  const eventInfo = {\n    title: cleanTitle,\n    dateTime: formatDateTime(start, isAllDay, isMeeting),\n    timeUntil: getTimeUntil(start),\n    description: description,\n    eventId: eventId,\n    startDateTime: start,\n    isAllDay: isAllDay\n  };\n  \n  if (isTask) {\n    tasks[urgency].push(eventInfo);\n    totalTasks++;\n    console.log(`✓ Task: ${cleanTitle} (${urgency})`);\n  } else if (isMeeting) {\n    meetings[urgency].push(eventInfo);\n    totalMeetings++;\n    console.log(`✓ Meeting: ${cleanTitle} (${urgency})`);\n  }\n}\n\n// Calculate total\nconst totalItems = totalTasks + totalMeetings;\n\nconsole.log(`\\nTotals: ${totalTasks} tasks, ${totalMeetings} meetings = ${totalItems} total`);\n\nif (totalItems === 0) {\n  return [{\n    json: {\n      message: '✅ No upcoming events or tasks.\\n\\nYou\\'re all caught up! 🎉',\n      total_items: 0,\n      timestamp: now.toISOString()\n    }\n  }];\n}\n\n// Build message\nlet message = '';\n\n// Header\nmessage += '🔔 DAILY REMINDER\\n';\nmessage += '═'.repeat(45) + '\\n';\nmessage += `📊 Total: ${totalItems} item${totalItems !== 1 ? 's' : ''}\\n`;\nmessage += `📅 ${now.toLocaleDateString('en-US', { \n  weekday: 'long', \n  year: 'numeric', \n  month: 'long', \n  day: 'numeric' \n})}\\n\\n`;\n\n// === MEETINGS SECTION ===\nif (totalMeetings > 0) {\n  message += '⏰ Upcoming To Do (With Specified Time)\\n';\n  message += '─'.repeat(45) + '\\n';\n  \n  if (meetings.urgent.length > 0) {\n    message += '\\n🔥 TODAY:\\n';\n    meetings.urgent.sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));\n    \n    for (const mtg of meetings.urgent) {\n      message += `  • ${mtg.title}\\n`;\n      message += `    🕒 ${mtg.dateTime}\\n`;\n      message += `    ⏰ ${mtg.timeUntil}\\n\\n`;\n    }\n  }\n  \n  if (meetings.soon.length > 0) {\n    message += '📅 THIS WEEK:\\n';\n    meetings.soon.sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));\n    \n    for (const mtg of meetings.soon) {\n      message += `  • ${mtg.title}\\n`;\n      message += `    🕒 ${mtg.dateTime}\\n`;\n      message += `    ⏳ ${mtg.timeUntil}\\n\\n`;\n    }\n  }\n}\n\n// === TASKS SECTION ===\nif (totalTasks > 0) {\n  message += '📋 Upcoming To Do (Without Specified Time)\\n';\n  message += '─'.repeat(45) + '\\n';\n  \n  if (tasks.overdue.length > 0) {\n    message += '\\n🚨 OVERDUE:\\n';\n    tasks.overdue.sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));\n    \n    for (const task of tasks.overdue) {\n      message += `  ❗ ${task.title}\\n`;\n      message += `     Was due: ${task.dateTime}\\n\\n`;\n    }\n  }\n  \n  if (tasks.urgent.length > 0) {\n    message += '🔥 URGENT (Next 24 hours):\\n';\n    tasks.urgent.sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));\n    \n    for (const task of tasks.urgent) {\n      message += `  ⚡ ${task.title}\\n`;\n      message += `     Due: ${task.dateTime}\\n`;\n      message += `     ⏰ ${task.timeUntil}\\n\\n`;\n    }\n  }\n  \n  if (tasks.soon.length > 0) {\n    message += '⚠️ THIS WEEK:\\n';\n    tasks.soon.sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));\n    \n    for (const task of tasks.soon) {\n      message += `  • ${task.title}\\n`;\n      message += `    Due: ${task.dateTime}\\n`;\n      message += `    ⏳ ${task.timeUntil}\\n\\n`;\n    }\n  }\n  \n  if (tasks.upcoming.length > 0) {\n    message += '📆 UPCOMING:\\n';\n    tasks.upcoming.sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));\n    \n    const byMonth = {};\n    for (const task of tasks.upcoming) {\n      const date = new Date(task.startDateTime);\n      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;\n      const monthName = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });\n      \n      if (!byMonth[monthKey]) {\n        byMonth[monthKey] = { name: monthName, items: [] };\n      }\n      byMonth[monthKey].items.push(task);\n    }\n    \n    for (const monthKey in byMonth) {\n      const monthData = byMonth[monthKey];\n      message += `\\n  ${monthData.name} (${monthData.items.length}):\\n`;\n      \n      for (const task of monthData.items) {\n        const date = new Date(task.startDateTime);\n        message += `    ${date.getDate()}: ${task.title}\\n`;\n      }\n    }\n    message += '\\n';\n  }\n}\n\n// Footer\nmessage += '═'.repeat(45) + '\\n';\nmessage += '💡 Tip: Stay organized and on track!\\n';\nmessage += '🔄 Updated: ' + now.toLocaleTimeString('en-US', { \n  hour: '2-digit', \n  minute: '2-digit',\n  hour12: true\n});\n\nconsole.log(`✓ Message created (${message.length} chars)`);\n\nreturn [{\n  json: {\n    message: message,\n    total_items: totalItems,\n    total_tasks: totalTasks,\n    total_meetings: totalMeetings,\n    task_overdue: tasks.overdue.length,\n    task_urgent: tasks.urgent.length,\n    task_soon: tasks.soon.length,\n    task_upcoming: tasks.upcoming.length,\n    meeting_urgent: meetings.urgent.length,\n    meeting_soon: meetings.soon.length,\n    timestamp: now.toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2752,
+        528
+      ],
+      "id": "b04d1508-3628-442e-a777-99e07179a648",
+      "name": "⚡ Process Alerts"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "endxwaterbucket@gmail.com",
+          "mode": "list",
+          "cachedResultName": "endxwaterbucket@gmail.com"
+        },
+        "timeMax": "={{$now.plus({day: 365})}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -2944,
+        528
+      ],
+      "id": "7e75888d-9fe4-4431-9395-7a146a0b9d9c",
+      "name": "📆 Get Upcoming Events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "NlYg7Jw32kZ9jwiI",
+          "name": "Google Calendar account"
+        }
+      },
+      "notes": "⚠️ CREDENTIAL NEEDED: Google Calendar OAuth2\nGet this from your team members"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8e8393a0-06bc-461a-a0df-21bb5cfe2936",
+              "leftValue": "={{ $json.isDocument }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2032,
+        288
+      ],
+      "id": "e93c28c0-46ca-43c9-916c-43b33df711a2",
+      "name": "📄 Is Document?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\n// Check if conversion failed\nif (input.conversionSuccess === false) {\n  return [{ json: input }];  // Pass through error message\n}\n\nconst extractedText = input.extractedText || input.data || '';\nconst wordCount = input.wordCount || 0;\n\nconsole.log(`📊 Processing: ${wordCount} words from ${input.fileName}`);\n\n// Check if enough text\nif (! extractedText || wordCount < 50) {\n  return [{\n    json: {\n      chatId: input.chatId,\n      text: `⚠️ File processed but contains only ${wordCount} words.\\n\\nPlease ensure the file contains meeting notes. `,\n      skipAI: true\n    }\n  }];\n}\n\n// Format for existing workflow\nreturn [{\n  json: {\n    chatId: input.chatId,\n    username: input.username || 'User',\n    messageText: `[FILE: ${input. fileName}]`,\n    notes: extractedText,  // Feeds into existing meeting summary flow\n    sessionId: input.sessionId,\n    skipAI: false,\n    isMeetingNotes: true,\n    fromFile: true,\n    fileName: input.fileName,\n    fileType: input.fileType,\n    wordCount: wordCount\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1152,
+        48
+      ],
+      "id": "03e87368-aa2e-46ae-9e7b-7d70c006f4b5",
+      "name": "✅ Format for Summary"
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot8443568930:AAEw8DGfj_At7iHcywYMq1nY0VCjVfJKbmo/getFile",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "file_id",
+              "value": "={{ $('📄 Is Document?').item.json.fileId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1696,
+        144
+      ],
+      "id": "3683e4b4-a30a-4f4a-a8e4-2a993a3c6a2c",
+      "name": "📥 Get File Info"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot8443568930:AAEw8DGfj_At7iHcywYMq1nY0VCjVfJKbmo/{{ $json.result.file_path }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1488,
+        144
+      ],
+      "id": "13dc3a8f-20aa-4a8c-8f31-d6e11d75a454",
+      "name": "Download File"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "📄 Processing your file: {{ $json.fileName }}  ⏳ This may take 10-30 seconds...   🔄 Extracting text → Generating summary → Creating events",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1904,
+        144
+      ],
+      "id": "ae360d14-07e4-4985-9c8a-1c909cd321f5",
+      "name": "File Alert",
+      "webhookId": "c79f3589-a445-45d5-99b6-b4ddc7ae254a",
+      "credentials": {
+        "telegramApi": {
+          "id": "IAo3DxNxKZBquxfz",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst documentData = $('📄 Is Document?').first().json;\nconst binaryData = input. binary?.data?.data;\n\nconsole.log('=== CONVERTAPI DIRECT REQUEST ===');\nconsole.log('File:', documentData. fileName);\nconsole.log('File type:', documentData.fileType);\nconsole.log('Binary data length:', binaryData?.length || 0);\n\nif (!binaryData) {\n  throw new Error('No binary data found');\n}\n\nconst CONVERTAPI_SECRET = 'YOUR CONVERT API TOKEN';  // Your actual secret\nconst fileType = documentData.fileType;\n\nconsole.log('Secret length:', CONVERTAPI_SECRET.length);\nconsole.log('Secret preview:', CONVERTAPI_SECRET.substring(0, 10) + '...');\n\ntry {\n  console.log('Converting file directly...');\n  \n  const requestBody = {\n    Parameters: [\n      {\n        Name: 'File',\n        FileValue: {\n          Name: documentData. fileName,\n          Data: binaryData\n        }\n      }\n    ]\n  };\n  \n  console.log('Sending request to ConvertAPI...');\n  \n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://v2.convertapi.com/convert/${fileType}/to/txt`,\n    headers: {\n      'Content-Type': 'application/json'\n    },\n    qs: {  // ← Use qs parameter instead of URL query string\n      Secret: CONVERTAPI_SECRET,\n      StoreFile: 'true'\n    },\n    body: requestBody,\n    json: true,\n    timeout: 60000\n  });\n  \n  console. log('✅ Response received! ');\n  console.log('Conversion cost:', response.ConversionCost);\n  console.log('Files returned:', response.Files?.length || 0);\n  \n  if (! response.Files || response.Files. length === 0) {\n    console.error('Full response:', JSON.stringify(response, null, 2));\n    throw new Error('No files returned');\n  }\n  \n  const textFileUrl = response.Files[0].Url;\n  console.log('📥 Downloading from:', textFileUrl);\n  \n  const textContent = await this.helpers.httpRequest({\n    method: 'GET',\n    url: textFileUrl,\n    json: false\n  });\n  \n  const wordCount = textContent.split(/\\s+/).filter(w => w.length > 0).length;\n  console.log('✅ SUCCESS!  Extracted:', wordCount, 'words');\n  console.log('Preview:', textContent.substring(0, 200));\n  \n  return [{\n    json: {\n      ...documentData,\n      extractedText: textContent,\n      data: textContent,\n      wordCount: wordCount,\n      extractionSuccess: true,\n      extractionMethod: 'convertapi'\n    }\n  }];\n  \n} catch (error) {\n  console.error('❌ ERROR:', error.message);\n  console. error('Status code:', error.statusCode);\n  \n  if (error.response?. body) {\n    console.error('Response body:', JSON.stringify(error.response.body, null, 2));\n  }\n  \n  return [{\n    json: {\n      chatId: documentData.chatId,\n      text: `❌ Conversion failed: ${error.message}\\n\\n💡 Please paste the text directly instead. `,\n      skipAI: true,\n      extractionSuccess: false\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1296,
+        48
+      ],
+      "id": "ac42218a-7731-48a8-b6fe-c7e254297f21",
+      "name": "📄 ConvertAPI - Extract Text"
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "={{ $json.messageText }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        -2208,
+        288
+      ],
+      "id": "d9096eea-533c-4efa-8251-efc0f831391d",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "GPT-4"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "={{ $('🔀 Meeting Notes?').item.json.notes }}"
+            },
+            {
+              "role": "system",
+              "content": "You are a professional AI meeting assistant used for real-world project management.\n\nYour job is to:\n1. Read the full meeting notes.\n2. Produce a clean, natural-language meeting summary (not just bullet points).\n\nIMPORTANT RULES:\n- Be concise but informative.\n- Do NOT invent any information.\n- Do NOT include noise, duplicated text, or corrupted content.\n- Do NOT use LaTeX or any math formatting.\n- Output must be suitable for Telegram (plain text + emojis only).\n- If multiple meetings are detected, only summarize the main one.\n- If no action items exist, clearly say so.\n\nOUTPUT FORMAT (STRICT):\n\n📋 Meeting Summary  \n[Write a short, well-written paragraph that clearly explains what this meeting was about, the key timeline, and the most important outcomes.]\n\nDo NOT output anything outside this structure.\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        224
+      ],
+      "id": "836268b9-cc42-4674-80ed-3f0165a7e3f8",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LXU0jEK33EMb52e5",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "gpt-4"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -608,
+        736
+      ],
+      "id": "b3a7a038-ed71-4a98-aa03-311e0dc21b4b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LXU0jEK33EMb52e5",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "TEST2"
+        },
+        "returnAll": "={{ $fromAI('Return_All', '', 'Boolean') }}",
+        "timeMin": "={{ $fromAI('After', '', 'string') }}",
+        "timeMax": "={{ $fromAI('Before', '', 'string') }}",
+        "options": {
+          "orderBy": "startTime"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        736
+      ],
+      "id": "6ad548b8-6a84-48c0-88c2-af27a70496d7",
+      "name": "Get",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "NlYg7Jw32kZ9jwiI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "TEST2"
+        },
+        "eventId": "={{ $fromAI('Event_ID', '', 'string') }}",
+        "updateFields": {
+          "end": "={{ $fromAI('End', '', 'string') }}",
+          "start": "={{ $fromAI('Start', '', 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        736
+      ],
+      "id": "a5b33a4f-96c9-451c-9f92-d05805a07a21",
+      "name": "Update",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "NlYg7Jw32kZ9jwiI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "TEST2"
+        },
+        "timeMin": "={{ $fromAI('Start_Time', '', 'string') }}",
+        "timeMax": "={{ $fromAI('End_Time', '', 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        736
+      ],
+      "id": "10690f69-3f32-4c0c-a6ab-771d9e393d6d",
+      "name": "Check",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "NlYg7Jw32kZ9jwiI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "TEST2"
+        },
+        "eventId": "={{ $fromAI('Event_ID', '', 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -144,
+        736
+      ],
+      "id": "e516f5bf-180e-4ada-ad1e-e918b34f055e",
+      "name": "Delete",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "NlYg7Jw32kZ9jwiI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "TEST2"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        736
+      ],
+      "id": "e63bf8f0-d95e-47d2-830a-90ab6e31acda",
+      "name": "Create",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "NlYg7Jw32kZ9jwiI",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every 3 Seconds": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ TRIGGER: Daily Alerts": {
+      "main": [
+        [
+          {
+            "node": "📆 Get Upcoming Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💬 Processing...": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Format Response": {
+      "main": [
+        [
+          {
+            "node": "📤 Send Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📅 Parse Dates": {
+      "main": [
+        [
+          {
+            "node": "📆 Create Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Extract Actions": {
+      "main": [
+        [
+          {
+            "node": "📊 Format Response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📅 Parse Dates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Format": {
+      "main": [
+        [
+          {
+            "node": "✅ Extract Actions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 Merge": {
+      "main": [
+        [
+          {
+            "node": "📋 Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Calendar": {
+      "main": [
+        [
+          {
+            "node": "Send Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Calendar": {
+      "main": [
+        [
+          {
+            "node": "Format Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Commands": {
+      "main": [
+        [
+          {
+            "node": "Send Direct",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 Meeting Notes?": {
+      "main": [
+        [
+          {
+            "node": "🔀 Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "💬 Processing...",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route Commands",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Updates": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Updates": {
+      "main": [
+        [
+          {
+            "node": "Process Updates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Offset": {
+      "main": [
+        [
+          {
+            "node": "Get Updates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Set Offset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚡ Process Alerts": {
+      "main": [
+        [
+          {
+            "node": "📱 Send Telegram Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📆 Get Upcoming Events": {
+      "main": [
+        [
+          {
+            "node": "⚡ Process Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 Is Document?": {
+      "main": [
+        [
+          {
+            "node": "File Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🔀 Meeting Notes?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Format for Summary": {
+      "main": [
+        [
+          {
+            "node": "🔀 Meeting Notes?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 Get File Info": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "📄 ConvertAPI - Extract Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Alert": {
+      "main": [
+        [
+          {
+            "node": "📥 Get File Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 ConvertAPI - Extract Text": {
+      "main": [
+        [
+          {
+            "node": "✅ Format for Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "📄 Is Document?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "🔀 Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "0c35b487-7b4e-4bc6-beab-87521bd695d3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "adf6274bcd036cc69a63703ea8028bd0ec0c6a8ab35a2d9583da7da9b14c6bb0"
+  },
+  "id": "8mlz3EIA9oecde1X",
+  "tags": []
+}

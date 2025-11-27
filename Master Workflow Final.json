@@ -642,9 +642,9 @@
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "gpt-4",
+          "value": "gpt-4o-mini",
           "mode": "list",
-          "cachedResultName": "GPT-4"
+          "cachedResultName": "GPT-4O-MINI"
         },
         "responses": {
           "values": [
@@ -679,9 +679,9 @@
       "parameters": {
         "model": {
           "__rl": true,
-          "value": "gpt-4",
+          "value": "gpt-4o-mini",
           "mode": "list",
-          "cachedResultName": "gpt-4"
+          "cachedResultName": "gpt-4o-mini"
         },
         "options": {}
       },
@@ -1249,7 +1249,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "0c35b487-7b4e-4bc6-beab-87521bd695d3",
+  "versionId": "98340ec9-795d-441e-b2d9-2ff81acd4e9c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "adf6274bcd036cc69a63703ea8028bd0ec0c6a8ab35a2d9583da7da9b14c6bb0"

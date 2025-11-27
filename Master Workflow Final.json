@@ -1,4 +1,5 @@
 {
+  "name": "MAIN",
   "nodes": [
     {
       "parameters": {
@@ -14,10 +15,10 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -2816,
-        208
+        -3136,
+        288
       ],
-      "id": "818acafb-fa90-45a6-98c5-4b43e3b97420",
+      "id": "e755b9c9-621d-4e88-86f4-67ced061beb4",
       "name": "Every 3 Seconds"
     },
     {
@@ -33,10 +34,10 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -2848,
-        448
+        -3168,
+        528
       ],
-      "id": "66c72064-a833-480c-badf-827b8a95c02c",
+      "id": "f5280686-a802-4502-b53f-dd7c818e0db9",
       "name": "⏰ TRIGGER: Daily Alerts"
     },
     {
@@ -48,15 +49,15 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        64,
-        176
+        -368,
+        256
       ],
-      "id": "c75b7583-ab92-483d-a382-d19e70199e84",
+      "id": "93553b6e-f1a6-4316-b262-b75bd4a1a647",
       "name": "💬 Processing...",
       "webhookId": "c79f3589-a445-45d5-99b6-b4ddc7ae254a",
       "credentials": {
         "telegramApi": {
-          "id": "YunHMF9u7nDB4Gz0",
+          "id": "IAo3DxNxKZBquxfz",
           "name": "Telegram account"
         }
       }
@@ -72,15 +73,15 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1104,
-        -16
+        1024,
+        64
       ],
-      "id": "09329d4a-d440-4141-8286-20d674da780a",
+      "id": "01da7c0a-b9a3-4833-8549-e4b7e557f106",
       "name": "📤 Send Summary",
       "webhookId": "1946cf67-8891-4726-a3fc-d44f5e4e9ded",
       "credentials": {
         "telegramApi": {
-          "id": "YunHMF9u7nDB4Gz0",
+          "id": "IAo3DxNxKZBquxfz",
           "name": "Telegram account"
         }
       }
@@ -92,19 +93,19 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        912,
-        -16
+        832,
+        64
       ],
-      "id": "1b3631e0-64e6-4f97-adb7-4c4412c0d815",
+      "id": "1b1d2424-4438-4c99-9153-5ab377e5e23d",
       "name": "📊 Format Response"
     },
     {
       "parameters": {
         "calendar": {
           "__rl": true,
-          "value": "geraldsch.cdg@gmail.com",
+          "value": "8c21b3ca39470f0512e0610d58c7d3fd72dfef6edbdc7eb1d93a62917bf580d7@group.calendar.google.com",
           "mode": "list",
-          "cachedResultName": "geraldsch.cdg@gmail.com"
+          "cachedResultName": "TEST"
         },
         "start": "={{$json.start}}",
         "end": "={{$json.end}}",
@@ -116,14 +117,14 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        1104,
-        160
+        1024,
+        240
       ],
-      "id": "a561e004-f10d-4c90-9d2e-fc0f48d80955",
+      "id": "016f6a88-98b4-4b04-9689-1bf2d1d0a06c",
       "name": "📆 Create Event",
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "TpOeDGn4MzFeviaT",
+          "id": "NlYg7Jw32kZ9jwiI",
           "name": "Google Calendar account"
         }
       }
@@ -135,10 +136,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        912,
-        160
+        832,
+        240
       ],
-      "id": "8ffb2be7-5f16-4d36-a720-a0a53bc2a399",
+      "id": "d2710e3f-4304-490e-ab6e-9e1765c6ecd4",
       "name": "📅 Parse Dates"
     },
     {
@@ -148,23 +149,23 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        704,
-        -16
+        624,
+        64
       ],
-      "id": "ee0ac932-aca6-42f8-bdf0-b6b550961cdc",
+      "id": "212d711c-80f3-4311-a61a-eed3a2bf5d4f",
       "name": "✅ Extract Actions"
     },
     {
       "parameters": {
-        "jsCode": "const inputs = $input.all();\n\nconsole.log('=== MERGE NODE OUTPUT ===');\nconsole.log('Inputs:', inputs.length);\n\nlet originalNotes = '';\nlet summary = '';\n\n// Try to get notes from first input\nif (inputs[0]) {\n  originalNotes = inputs[0].json?.notes || inputs[0].notes || '';\n  console.log('✓ Found notes, length:', originalNotes.length);\n}\n\n// Try to get summary from second input\nif (inputs[1]) {\n  summary = inputs[1].json?.summary_text || inputs[1].summary_text || '';\n  console.log('✓ Found summary, length:', summary.length);\n}\n\n// Format notes\nlet formattedNotes = originalNotes\n  .replace(/([A-Z][a-z]+ [A-Z][a-z]+:)/g, '\\n$1\\n')\n  .replace(/([A-Z][a-z]+:)/g, '\\n$1\\n')\n  .replace(/\\s+-\\s+/g, '\\n- ')\n  .replace(/\\n+/g, '\\n')\n  .trim();\n\nreturn [{\n  json: {\n    formatted_notes: formattedNotes,\n    summary: summary,\n    original_notes: originalNotes\n  }\n}];"
+        "jsCode": "const inputs = $input.all();\n\nconsole.log('=== MERGE NODE OUTPUT ===');\nconsole.log('Inputs:', inputs.length);\n\nlet originalNotes = '';\nlet summary = '';\n\n// Try to get notes from first input\nif (inputs[0]) {\n  originalNotes = inputs[0].json?.notes || inputs[0].notes || '';\n  console.log('✓ Found notes, length:', originalNotes.length);\n}\n\n// Try to get summary from second input\nif (inputs[1]) {\n  const j = inputs[1].json || inputs[1];\n  let s = '';\n\n  // Huggingface\n  if (typeof j.summary_text === 'string' && j.summary_text.length > 0) {\n    s = j.summary_text;\n  } else if (Array.isArray(j.output)) {\n    // GPT\n    // j.output[0].content[0].text\n    const firstMsg = j.output[0];\n    if (firstMsg && Array.isArray(firstMsg.content)) {\n      const firstContent = firstMsg.content[0];\n      if (firstContent && typeof firstContent.text === 'string') {\n        s = firstContent.text;\n      }\n    }\n  }\n\n  summary = s || '';\n  console.log('✓ Found summary, length:', summary.length);\n}\n\n\n// Format notes\nlet formattedNotes = originalNotes\n  .replace(/([A-Z][a-z]+ [A-Z][a-z]+:)/g, '\\n$1\\n')\n  .replace(/([A-Z][a-z]+:)/g, '\\n$1\\n')\n  .replace(/\\s+-\\s+/g, '\\n- ')\n  .replace(/\\n+/g, '\\n')\n  .trim();\n\nreturn [{\n  json: {\n    formatted_notes: formattedNotes,\n    summary: summary,\n    original_notes: originalNotes\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        512,
-        -16
+        432,
+        64
       ],
-      "id": "ba84464c-bb9d-4aee-be1d-073c729d24dd",
+      "id": "b1eb0a2b-d570-471a-b965-53b8efe6d34d",
       "name": "📋 Format"
     },
     {
@@ -172,50 +173,11 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        320,
-        -80
+        176,
+        64
       ],
-      "id": "b629cad3-b9d0-433d-b0c9-31a8cf2dc210",
+      "id": "dbe87ec3-bcaa-4cba-9996-ce04d99892df",
       "name": "🔀 Merge"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://router.huggingface.co/hf-inference/models/philschmid/bart-large-cnn-samsum",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "Bearer YOUR_HF_KEY"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "inputs",
-              "value": "={{ $('🔀 Meeting Notes?').item.json.notes }}"
-            }
-          ]
-        },
-        "options": {
-          "timeout": 60000
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
-      "position": [
-        208,
-        96
-      ],
-      "id": "4021f7a7-4643-4533-a7cf-a7967e0d0ffc",
-      "name": "🤖 Summarize Meeting"
     },
     {
       "parameters": {
@@ -226,15 +188,15 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        352,
-        432
+        32,
+        512
       ],
-      "id": "6703dc24-bc2a-4c43-ad2e-1afeb3b1dd4e",
+      "id": "4c164c85-8e97-4734-97b8-15120a812a6e",
       "name": "Send Calendar",
       "webhookId": "6c69fc3a-a3a1-4826-9a10-739a2ac497e8",
       "credentials": {
         "telegramApi": {
-          "id": "YunHMF9u7nDB4Gz0",
+          "id": "IAo3DxNxKZBquxfz",
           "name": "Telegram account"
         }
       }
@@ -246,175 +208,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        160,
-        432
+        -160,
+        512
       ],
-      "id": "2de075bd-7b64-42b5-8d9d-595fb86a6936",
+      "id": "51edbfc6-aa75-48b2-b862-bb455be6ed6e",
       "name": "Format Calendar"
-    },
-    {
-      "parameters": {
-        "operation": "getAll",
-        "calendar": {
-          "__rl": true,
-          "value": "geraldsch.cdg@gmail.com",
-          "mode": "list",
-          "cachedResultName": "geraldsch.cdg@gmail.com"
-        },
-        "returnAll": "={{ $fromAI('Return_All', '', 'Boolean') }}",
-        "timeMin": "={{ $fromAI('After', '', 'string') }}",
-        "timeMax": "={{ $fromAI('Before', '', 'string') }}",
-        "options": {
-          "orderBy": "startTime"
-        }
-      },
-      "type": "n8n-nodes-base.googleCalendarTool",
-      "typeVersion": 1.3,
-      "position": [
-        512,
-        656
-      ],
-      "id": "9cb45696-9bca-47a1-b808-65f30d026abb",
-      "name": "Get",
-      "credentials": {
-        "googleCalendarOAuth2Api": {
-          "id": "TpOeDGn4MzFeviaT",
-          "name": "Google Calendar account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "update",
-        "calendar": {
-          "__rl": true,
-          "value": "geraldsch.cdg@gmail.com",
-          "mode": "list",
-          "cachedResultName": "geraldsch.cdg@gmail.com"
-        },
-        "eventId": "={{ $fromAI('Event_ID', '', 'string') }}",
-        "updateFields": {
-          "end": "={{ $fromAI('End', '', 'string') }}",
-          "start": "={{ $fromAI('Start', '', 'string') }}"
-        }
-      },
-      "type": "n8n-nodes-base.googleCalendarTool",
-      "typeVersion": 1.3,
-      "position": [
-        400,
-        656
-      ],
-      "id": "7b1539b4-ea0d-4aa6-a34d-258012cd9abc",
-      "name": "Update",
-      "credentials": {
-        "googleCalendarOAuth2Api": {
-          "id": "TpOeDGn4MzFeviaT",
-          "name": "Google Calendar account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "calendar",
-        "calendar": {
-          "__rl": true,
-          "value": "geraldsch.cdg@gmail.com",
-          "mode": "list",
-          "cachedResultName": "geraldsch.cdg@gmail.com"
-        },
-        "timeMin": "={{ $fromAI('Start_Time', '', 'string') }}",
-        "timeMax": "={{ $fromAI('End_Time', '', 'string') }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.googleCalendarTool",
-      "typeVersion": 1.3,
-      "position": [
-        288,
-        656
-      ],
-      "id": "f91a49a3-b889-4da3-916b-f1b9cf98af6e",
-      "name": "Check",
-      "credentials": {
-        "googleCalendarOAuth2Api": {
-          "id": "TpOeDGn4MzFeviaT",
-          "name": "Google Calendar account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "delete",
-        "calendar": {
-          "__rl": true,
-          "value": "geraldsch.cdg@gmail.com",
-          "mode": "list",
-          "cachedResultName": "geraldsch.cdg@gmail.com"
-        },
-        "eventId": "={{ $fromAI('Event_ID', '', 'string') }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.googleCalendarTool",
-      "typeVersion": 1.3,
-      "position": [
-        176,
-        656
-      ],
-      "id": "44ac9857-d6d5-48a3-80d1-0c58805c9ee6",
-      "name": "Delete",
-      "credentials": {
-        "googleCalendarOAuth2Api": {
-          "id": "TpOeDGn4MzFeviaT",
-          "name": "Google Calendar account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "calendar": {
-          "__rl": true,
-          "value": "geraldsch.cdg@gmail.com",
-          "mode": "list",
-          "cachedResultName": "geraldsch.cdg@gmail.com"
-        },
-        "start": "={{ $fromAI('Start', '', 'string') }}",
-        "end": "={{ $fromAI('End', '', 'string') }}",
-        "additionalFields": {
-          "summary": "={{ $fromAI('Summary', '', 'string') }}"
-        }
-      },
-      "type": "n8n-nodes-base.googleCalendarTool",
-      "typeVersion": 1.3,
-      "position": [
-        64,
-        656
-      ],
-      "id": "eb2619e6-cf19-4686-82c5-bb94bcc69b5c",
-      "name": "Create",
-      "credentials": {
-        "googleCalendarOAuth2Api": {
-          "id": "TpOeDGn4MzFeviaT",
-          "name": "Google Calendar account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        -256,
-        656
-      ],
-      "id": "bd624cdb-83b6-466b-8b32-cac92eca8a2a",
-      "name": "Gemini",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "Jx4venmKVw8jF2DX",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
     },
     {
       "parameters": {
@@ -424,10 +222,10 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        -112,
-        656
+        -432,
+        736
       ],
-      "id": "95de3510-0720-4647-a094-c33d7943bf62",
+      "id": "5648bfb2-9820-45e0-be50-4c894fb9ae45",
       "name": "Memory"
     },
     {
@@ -441,10 +239,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
       "position": [
-        -128,
-        448
+        -448,
+        528
       ],
-      "id": "eda95450-f02d-4533-9e25-5351621d8b81",
+      "id": "56bf80b3-097b-4209-9c38-6252dfe9668e",
       "name": "AI Calendar"
     },
     {
@@ -458,15 +256,15 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -224,
-        272
+        -544,
+        352
       ],
-      "id": "c09752d1-7140-40ca-b0c5-d63de957d914",
+      "id": "94ca02c1-65e3-40be-86bd-540812291de0",
       "name": "Send Direct",
       "webhookId": "d747844b-9f1d-4622-a185-b967fdff6c67",
       "credentials": {
         "telegramApi": {
-          "id": "YunHMF9u7nDB4Gz0",
+          "id": "IAo3DxNxKZBquxfz",
           "name": "Telegram account"
         }
       }
@@ -498,10 +296,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -384,
-        352
+        -704,
+        432
       ],
-      "id": "c5d60ad6-563e-49bf-8485-176db09464fe",
+      "id": "ed101621-f4a1-45f2-a30b-a4e641e704c5",
       "name": "Route Commands"
     },
     {
@@ -531,10 +329,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -656,
-        224
+        -976,
+        304
       ],
-      "id": "7e700809-6e65-4d0d-a598-8077893ce158",
+      "id": "f79597a3-99dc-488a-b8f6-01b693d8c096",
       "name": "🔀 Meeting Notes?"
     },
     {
@@ -544,15 +342,15 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2096,
-        208
+        -2416,
+        288
       ],
-      "id": "022fc858-45f8-4f8c-8142-6bf287f5f810",
+      "id": "b908fa95-6732-4b53-9ef2-2cb5c5e3f31b",
       "name": "Process Updates"
     },
     {
       "parameters": {
-        "url": "=https://api.telegram.org/bot8443568930:AAEw8DGfj_At7iHcywYMq1nY0VCjVfJKbmo/getUpdates",
+        "url": "=https://api.telegram.org/bot8218962156:AAFq0DsbA9_Npqggny7AW-ser2CvG9_9zbs/getUpdates",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "telegramApi",
         "sendQuery": true,
@@ -581,14 +379,14 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2304,
-        208
+        -2624,
+        288
       ],
-      "id": "066354a5-47c2-40f7-b3e4-4c228f10b245",
+      "id": "24ad851f-c085-4575-a00a-ded25a291f61",
       "name": "Get Updates",
       "credentials": {
         "telegramApi": {
-          "id": "YunHMF9u7nDB4Gz0",
+          "id": "IAo3DxNxKZBquxfz",
           "name": "Telegram account"
         }
       }
@@ -600,15 +398,15 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2480,
-        208
+        -2800,
+        288
       ],
-      "id": "80788288-a448-4908-a894-b398277cc0e3",
+      "id": "37b4ad51-154d-4d97-b5fa-54772193de41",
       "name": "Set Offset"
     },
     {
       "parameters": {
-        "url": "https://api.telegram.org/bot8443568930:AAEw8DGfj_At7iHcywYMq1nY0VCjVfJKbmo/getUpdates",
+        "url": "=https://api.telegram.org/bot8218962156:AAFq0DsbA9_Npqggny7AW-ser2CvG9_9zbs/getUpdates",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
@@ -627,10 +425,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        -2624,
-        208
+        -2944,
+        288
       ],
-      "id": "8714fba9-3c59-4643-8d5d-582c417a6da5",
+      "id": "edafdf94-3b4c-46a3-872b-b9980b042c37",
       "name": "HTTP Request"
     },
     {
@@ -645,15 +443,15 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -2176,
-        448
+        -2496,
+        528
       ],
-      "id": "53238a14-233e-4e38-8650-87104d2445a2",
+      "id": "dd3f7594-95c7-4915-a57b-c8a9b8b9b039",
       "name": "📱 Send Telegram Alert",
       "webhookId": "master-telegram-001",
       "credentials": {
         "telegramApi": {
-          "id": "YunHMF9u7nDB4Gz0",
+          "id": "IAo3DxNxKZBquxfz",
           "name": "Telegram account"
         }
       },
@@ -666,10 +464,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2432,
-        448
+        -2752,
+        528
       ],
-      "id": "56f600e0-f87d-48d1-a24d-bf9170c65276",
+      "id": "b04d1508-3628-442e-a777-99e07179a648",
       "name": "⚡ Process Alerts"
     },
     {
@@ -677,9 +475,9 @@
         "operation": "getAll",
         "calendar": {
           "__rl": true,
-          "value": "geraldsch.cdg@gmail.com",
+          "value": "endxwaterbucket@gmail.com",
           "mode": "list",
-          "cachedResultName": "geraldsch.cdg@gmail.com"
+          "cachedResultName": "endxwaterbucket@gmail.com"
         },
         "timeMax": "={{$now.plus({day: 365})}}",
         "options": {}
@@ -687,14 +485,14 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        -2624,
-        448
+        -2944,
+        528
       ],
-      "id": "c823e024-9587-4007-bb98-e6c1d9deae42",
+      "id": "7e75888d-9fe4-4431-9395-7a146a0b9d9c",
       "name": "📆 Get Upcoming Events",
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "TpOeDGn4MzFeviaT",
+          "id": "NlYg7Jw32kZ9jwiI",
           "name": "Google Calendar account"
         }
       },
@@ -728,10 +526,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -1712,
-        208
+        -2032,
+        288
       ],
-      "id": "c6c95ddc-1fcf-47b0-a749-985321a57a96",
+      "id": "e93c28c0-46ca-43c9-916c-43b33df711a2",
       "name": "📄 Is Document?"
     },
     {
@@ -741,10 +539,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -832,
-        -32
+        -1152,
+        48
       ],
-      "id": "92fdc7f3-285b-4dad-805f-39650487c099",
+      "id": "03e87368-aa2e-46ae-9e7b-7d70c006f4b5",
       "name": "✅ Format for Summary"
     },
     {
@@ -764,10 +562,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        -1376,
-        64
+        -1696,
+        144
       ],
-      "id": "24633881-11e5-418c-80a0-6d5232f58a9c",
+      "id": "3683e4b4-a30a-4f4a-a8e4-2a993a3c6a2c",
       "name": "📥 Get File Info"
     },
     {
@@ -784,10 +582,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        -1168,
-        64
+        -1488,
+        144
       ],
-      "id": "356bc463-7ead-487c-bf54-98315a6b2a69",
+      "id": "13dc3a8f-20aa-4a8c-8f31-d6e11d75a454",
       "name": "Download File"
     },
     {
@@ -799,15 +597,15 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -1584,
-        64
+        -1904,
+        144
       ],
-      "id": "f76bf118-fee3-4871-950a-275fb5c60375",
+      "id": "ae360d14-07e4-4985-9c8a-1c909cd321f5",
       "name": "File Alert",
       "webhookId": "c79f3589-a445-45d5-99b6-b4ddc7ae254a",
       "credentials": {
         "telegramApi": {
-          "id": "YunHMF9u7nDB4Gz0",
+          "id": "IAo3DxNxKZBquxfz",
           "name": "Telegram account"
         }
       }
@@ -819,10 +617,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -976,
-        -32
+        -1296,
+        48
       ],
-      "id": "000c50d2-7bcc-4c9f-80b3-590f6d2c067a",
+      "id": "ac42218a-7731-48a8-b6fe-c7e254297f21",
       "name": "📄 ConvertAPI - Extract Text"
     },
     {
@@ -834,13 +632,221 @@
       "type": "n8n-nodes-base.removeDuplicates",
       "typeVersion": 2,
       "position": [
-        -1888,
-        208
+        -2208,
+        288
       ],
-      "id": "5dd961d6-1a7a-457f-a46c-9571c47c5f2a",
+      "id": "d9096eea-533c-4efa-8251-efc0f831391d",
       "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "GPT-4"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "={{ $('🔀 Meeting Notes?').item.json.notes }}"
+            },
+            {
+              "role": "system",
+              "content": "You are a professional AI meeting assistant used for real-world project management.\n\nYour job is to:\n1. Read the full meeting notes.\n2. Produce a clean, natural-language meeting summary (not just bullet points).\n\nIMPORTANT RULES:\n- Be concise but informative.\n- Do NOT invent any information.\n- Do NOT include noise, duplicated text, or corrupted content.\n- Do NOT use LaTeX or any math formatting.\n- Output must be suitable for Telegram (plain text + emojis only).\n- If multiple meetings are detected, only summarize the main one.\n- If no action items exist, clearly say so.\n\nOUTPUT FORMAT (STRICT):\n\n📋 Meeting Summary  \n[Write a short, well-written paragraph that clearly explains what this meeting was about, the key timeline, and the most important outcomes.]\n\nDo NOT output anything outside this structure.\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        224
+      ],
+      "id": "836268b9-cc42-4674-80ed-3f0165a7e3f8",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LXU0jEK33EMb52e5",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "gpt-4"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -608,
+        736
+      ],
+      "id": "b3a7a038-ed71-4a98-aa03-311e0dc21b4b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LXU0jEK33EMb52e5",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "TEST2"
+        },
+        "returnAll": "={{ $fromAI('Return_All', '', 'Boolean') }}",
+        "timeMin": "={{ $fromAI('After', '', 'string') }}",
+        "timeMax": "={{ $fromAI('Before', '', 'string') }}",
+        "options": {
+          "orderBy": "startTime"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        736
+      ],
+      "id": "6ad548b8-6a84-48c0-88c2-af27a70496d7",
+      "name": "Get",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "NlYg7Jw32kZ9jwiI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "TEST2"
+        },
+        "eventId": "={{ $fromAI('Event_ID', '', 'string') }}",
+        "updateFields": {
+          "end": "={{ $fromAI('End', '', 'string') }}",
+          "start": "={{ $fromAI('Start', '', 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        736
+      ],
+      "id": "a5b33a4f-96c9-451c-9f92-d05805a07a21",
+      "name": "Update",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "NlYg7Jw32kZ9jwiI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "TEST2"
+        },
+        "timeMin": "={{ $fromAI('Start_Time', '', 'string') }}",
+        "timeMax": "={{ $fromAI('End_Time', '', 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        736
+      ],
+      "id": "10690f69-3f32-4c0c-a6ab-771d9e393d6d",
+      "name": "Check",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "NlYg7Jw32kZ9jwiI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "TEST2"
+        },
+        "eventId": "={{ $fromAI('Event_ID', '', 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -144,
+        736
+      ],
+      "id": "e516f5bf-180e-4ada-ad1e-e918b34f055e",
+      "name": "Delete",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "NlYg7Jw32kZ9jwiI",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "TEST2"
+        },
+        "start": "={{ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        736
+      ],
+      "id": "e63bf8f0-d95e-47d2-830a-90ab6e31acda",
+      "name": "Create",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "NlYg7Jw32kZ9jwiI",
+          "name": "Google Calendar account"
+        }
+      }
     }
   ],
+  "pinData": {},
   "connections": {
     "Every 3 Seconds": {
       "main": [
@@ -868,7 +874,7 @@
       "main": [
         [
           {
-            "node": "🤖 Summarize Meeting",
+            "node": "Message a model",
             "type": "main",
             "index": 0
           }
@@ -935,89 +941,12 @@
         ]
       ]
     },
-    "🤖 Summarize Meeting": {
-      "main": [
-        [
-          {
-            "node": "🔀 Merge",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
     "Format Calendar": {
       "main": [
         [
           {
             "node": "Send Calendar",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Calendar",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Calendar",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Calendar",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Delete": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Calendar",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Create": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Calendar",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Gemini": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Calendar",
-            "type": "ai_languageModel",
             "index": 0
           }
         ]
@@ -1235,11 +1164,96 @@
           }
         ]
       ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "🔀 Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "0c35b487-7b4e-4bc6-beab-87521bd695d3",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "2da04f59d427957dc124e28a94b37ab6ed3c2c81388b1955ce17aea435b6c511"
-  }
+    "instanceId": "adf6274bcd036cc69a63703ea8028bd0ec0c6a8ab35a2d9583da7da9b14c6bb0"
+  },
+  "id": "8mlz3EIA9oecde1X",
+  "tags": []
 }

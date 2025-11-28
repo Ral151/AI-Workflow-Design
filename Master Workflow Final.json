@@ -103,9 +103,9 @@
       "parameters": {
         "calendar": {
           "__rl": true,
-          "value": "8c21b3ca39470f0512e0610d58c7d3fd72dfef6edbdc7eb1d93a62917bf580d7@group.calendar.google.com",
+          "value": "25d2d90ee77be020d7c39b2c5512ab26ba011b6ed7b34863e0af597a0b84e712@group.calendar.google.com",
           "mode": "list",
-          "cachedResultName": "TEST"
+          "cachedResultName": "Study Schedule"
         },
         "start": "={{$json.start}}",
         "end": "={{$json.end}}",
@@ -203,7 +203,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ai = $input.first().json;\nconst parsed = $('Process Updates').first().json;\n\nlet msg = ai.output || ai.text || 'Done!';\n\n// Fix literal \\n to actual newlines\nmsg = msg.replace(/\\\\n/g, '\\n');\n\n// Replace Markdown-breaking asterisks with bullets\nmsg = msg.replace(/^\\* /gm, '• ');\n\n// Escape other Markdown special characters that might cause issues\nfunction escapeMarkdown(text) {\n  return text\n    .replace(/([_\\[\\]()~`>#+\\-=|{}.!])/g, '\\\\$1');\n}\n\n// Don't escape if message already has emoji at start\nif (!msg.match(/^[\\u{1F300}-\\u{1F9FF}]/u)) {\n  if (msg.toLowerCase().includes('created')) msg = '✅ ' + msg;\n  else if (msg.toLowerCase().includes('deleted')) msg = '🗑️ ' + msg;\n  else if (msg.toLowerCase().includes('updated')) msg = '✏️ ' + msg;\n  else if (msg.toLowerCase().includes('events')) msg = '📅 ' + msg;\n}\n\n// Apply Markdown escaping (but preserve emojis and bullets)\nconst lines = msg.split('\\n');\nconst escapedLines = lines.map(line => {\n  // Don't escape lines that start with emoji or bullet\n  if (line.match(/^[\\u{1F300}-\\u{1F9FF}•]/u)) {\n    return line;\n  }\n  return escapeMarkdown(line);\n});\nmsg = escapedLines.join('\\n');\n\nconsole.log('Final message:', msg);\n\nreturn [{\n  json: {\n    chatId: parsed.chatId.toString(),\n    text: msg,\n    parse_mode: 'Markdown'\n  }\n}];"
+        "jsCode": "const ai = $input.first().json;\nconst parsed = $('Process Updates').first().json;\n\nlet msg = ai.output || ai.text || 'Done!';\n\n// Fix literal \\n to actual newlines\nmsg = msg.replace(/\\\\n/g, '\\n');\n\n// Replace Markdown-breaking asterisks with bullets\nmsg = msg.replace(/^\\* /gm, '• ');\n\n// Escape other Markdown special characters that might cause issues\nfunction escapeMarkdown(text) {\n  return text\n    .replace(/([_`>#+=|{}])/g, '\\\\$1');\n}\n\n// Don't escape if message already has emoji at start\nif (!msg.match(/^[\\u{1F300}-\\u{1F9FF}]/u)) {\n  if (msg.toLowerCase().includes('created')) msg = '✅ ' + msg;\n  else if (msg.toLowerCase().includes('deleted')) msg = '🗑️ ' + msg;\n  else if (msg.toLowerCase().includes('updated')) msg = '✏️ ' + msg;\n  else if (msg.toLowerCase().includes('events')) msg = '📅 ' + msg;\n}\n\n// Apply Markdown escaping (but preserve emojis and bullets)\nconst lines = msg.split('\\n');\nconst escapedLines = lines.map(line => {\n  // Don't escape lines that start with emoji or bullet\n  if (line.match(/^[\\u{1F300}-\\u{1F9FF}•]/u)) {\n    return line;\n  }\n  return escapeMarkdown(line);\n});\nmsg = escapedLines.join('\\n');\n\nconsole.log('Final message:', msg);\n\nreturn [{\n  json: {\n    chatId: parsed.chatId.toString(),\n    text: msg,\n    parse_mode: 'Markdown'\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -233,14 +233,14 @@
         "promptType": "define",
         "text": "={{ $json.input }}",
         "options": {
-          "systemMessage": "Today's date is 27 November, 2025.\\n\\nYou're an AI Calendar Assistant with Google Calendar access.\\n\\nUse tools to create, delete, update, check, and get events.\\n\\nBe friendly, concise. Use emojis: ✅❌🗑️✏️\\n\\nConfirm all actions."
+          "systemMessage": "Today's date is 28 November, 2025.\\n\\nYou're an AI Calendar Assistant with Google Calendar access.\\n\\nUse tools to create, delete, update, check, and get events.\\n\\nBe friendly, concise. Use emojis: ✅❌🗑️✏️\\n\\nConfirm all actions. Do not use any LaTeX at all.\n"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
       "position": [
         -448,
-        528
+        512
       ],
       "id": "56bf80b3-097b-4209-9c38-6252dfe9668e",
       "name": "AI Calendar"
@@ -433,7 +433,7 @@
     },
     {
       "parameters": {
-        "chatId": "-1003487374430",
+        "chatId": "8599070508",
         "text": "={{ $json[\"message\"] }}",
         "additionalFields": {
           "disable_web_page_preview": true,
@@ -475,9 +475,9 @@
         "operation": "getAll",
         "calendar": {
           "__rl": true,
-          "value": "endxwaterbucket@gmail.com",
+          "value": "25d2d90ee77be020d7c39b2c5512ab26ba011b6ed7b34863e0af597a0b84e712@group.calendar.google.com",
           "mode": "list",
-          "cachedResultName": "endxwaterbucket@gmail.com"
+          "cachedResultName": "Study Schedule"
         },
         "timeMax": "={{$now.plus({day: 365})}}",
         "options": {}
@@ -547,7 +547,7 @@
     },
     {
       "parameters": {
-        "url": "https://api.telegram.org/bot8443568930:AAEw8DGfj_At7iHcywYMq1nY0VCjVfJKbmo/getFile",
+        "url": "=https://api.telegram.org/bot8218962156:AAFq0DsbA9_Npqggny7AW-ser2CvG9_9zbs/getFile",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
@@ -570,7 +570,7 @@
     },
     {
       "parameters": {
-        "url": "=https://api.telegram.org/file/bot8443568930:AAEw8DGfj_At7iHcywYMq1nY0VCjVfJKbmo/{{ $json.result.file_path }}",
+        "url": "=https://api.telegram.org/file/bot8218962156:AAFq0DsbA9_Npqggny7AW-ser2CvG9_9zbs/{{ $json.result.file_path }}",
         "options": {
           "response": {
             "response": {
@@ -591,7 +591,7 @@
     {
       "parameters": {
         "chatId": "={{ $json.chatId }}",
-        "text": "📄 Processing your file: {{ $json.fileName }}  ⏳ This may take 10-30 seconds...   🔄 Extracting text → Generating summary → Creating events",
+        "text": "=📄 Processing your file: {{ $json.fileName }}  ⏳ This may take 10-30 seconds...   🔄 Extracting text → Generating summary → Creating events",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
@@ -612,7 +612,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst documentData = $('📄 Is Document?').first().json;\nconst binaryData = input. binary?.data?.data;\n\nconsole.log('=== CONVERTAPI DIRECT REQUEST ===');\nconsole.log('File:', documentData. fileName);\nconsole.log('File type:', documentData.fileType);\nconsole.log('Binary data length:', binaryData?.length || 0);\n\nif (!binaryData) {\n  throw new Error('No binary data found');\n}\n\nconst CONVERTAPI_SECRET = 'YOUR CONVERT API TOKEN';  // Your actual secret\nconst fileType = documentData.fileType;\n\nconsole.log('Secret length:', CONVERTAPI_SECRET.length);\nconsole.log('Secret preview:', CONVERTAPI_SECRET.substring(0, 10) + '...');\n\ntry {\n  console.log('Converting file directly...');\n  \n  const requestBody = {\n    Parameters: [\n      {\n        Name: 'File',\n        FileValue: {\n          Name: documentData. fileName,\n          Data: binaryData\n        }\n      }\n    ]\n  };\n  \n  console.log('Sending request to ConvertAPI...');\n  \n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://v2.convertapi.com/convert/${fileType}/to/txt`,\n    headers: {\n      'Content-Type': 'application/json'\n    },\n    qs: {  // ← Use qs parameter instead of URL query string\n      Secret: CONVERTAPI_SECRET,\n      StoreFile: 'true'\n    },\n    body: requestBody,\n    json: true,\n    timeout: 60000\n  });\n  \n  console. log('✅ Response received! ');\n  console.log('Conversion cost:', response.ConversionCost);\n  console.log('Files returned:', response.Files?.length || 0);\n  \n  if (! response.Files || response.Files. length === 0) {\n    console.error('Full response:', JSON.stringify(response, null, 2));\n    throw new Error('No files returned');\n  }\n  \n  const textFileUrl = response.Files[0].Url;\n  console.log('📥 Downloading from:', textFileUrl);\n  \n  const textContent = await this.helpers.httpRequest({\n    method: 'GET',\n    url: textFileUrl,\n    json: false\n  });\n  \n  const wordCount = textContent.split(/\\s+/).filter(w => w.length > 0).length;\n  console.log('✅ SUCCESS!  Extracted:', wordCount, 'words');\n  console.log('Preview:', textContent.substring(0, 200));\n  \n  return [{\n    json: {\n      ...documentData,\n      extractedText: textContent,\n      data: textContent,\n      wordCount: wordCount,\n      extractionSuccess: true,\n      extractionMethod: 'convertapi'\n    }\n  }];\n  \n} catch (error) {\n  console.error('❌ ERROR:', error.message);\n  console. error('Status code:', error.statusCode);\n  \n  if (error.response?. body) {\n    console.error('Response body:', JSON.stringify(error.response.body, null, 2));\n  }\n  \n  return [{\n    json: {\n      chatId: documentData.chatId,\n      text: `❌ Conversion failed: ${error.message}\\n\\n💡 Please paste the text directly instead. `,\n      skipAI: true,\n      extractionSuccess: false\n    }\n  }];\n}"
+        "jsCode": "const input = $input.first();\nconst documentData = $('📄 Is Document?').first().json;\nconst binaryData = input. binary?.data?.data;\n\nconsole.log('=== CONVERTAPI DIRECT REQUEST ===');\nconsole.log('File:', documentData. fileName);\nconsole.log('File type:', documentData.fileType);\nconsole.log('Binary data length:', binaryData?.length || 0);\n\nif (!binaryData) {\n  throw new Error('No binary data found');\n}\n\nconst CONVERTAPI_SECRET = 'YOUR KEY';  // Your actual secret\nconst fileType = documentData.fileType;\n\nconsole.log('Secret length:', CONVERTAPI_SECRET.length);\nconsole.log('Secret preview:', CONVERTAPI_SECRET.substring(0, 10) + '...');\n\ntry {\n  console.log('Converting file directly...');\n  \n  const requestBody = {\n    Parameters: [\n      {\n        Name: 'File',\n        FileValue: {\n          Name: documentData. fileName,\n          Data: binaryData\n        }\n      }\n    ]\n  };\n  \n  console.log('Sending request to ConvertAPI...');\n  \n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://v2.convertapi.com/convert/${fileType}/to/txt`,\n    headers: {\n      'Content-Type': 'application/json'\n    },\n    qs: {  // ← Use qs parameter instead of URL query string\n      Secret: CONVERTAPI_SECRET,\n      StoreFile: 'true'\n    },\n    body: requestBody,\n    json: true,\n    timeout: 60000\n  });\n  \n  console. log('✅ Response received! ');\n  console.log('Conversion cost:', response.ConversionCost);\n  console.log('Files returned:', response.Files?.length || 0);\n  \n  if (! response.Files || response.Files. length === 0) {\n    console.error('Full response:', JSON.stringify(response, null, 2));\n    throw new Error('No files returned');\n  }\n  \n  const textFileUrl = response.Files[0].Url;\n  console.log('📥 Downloading from:', textFileUrl);\n  \n  const textContent = await this.helpers.httpRequest({\n    method: 'GET',\n    url: textFileUrl,\n    json: false\n  });\n  \n  const wordCount = textContent.split(/\\s+/).filter(w => w.length > 0).length;\n  console.log('✅ SUCCESS!  Extracted:', wordCount, 'words');\n  console.log('Preview:', textContent.substring(0, 200));\n  \n  return [{\n    json: {\n      ...documentData,\n      extractedText: textContent,\n      data: textContent,\n      wordCount: wordCount,\n      extractionSuccess: true,\n      extractionMethod: 'convertapi'\n    }\n  }];\n  \n} catch (error) {\n  console.error('❌ ERROR:', error.message);\n  console. error('Status code:', error.statusCode);\n  \n  if (error.response?. body) {\n    console.error('Response body:', JSON.stringify(error.response.body, null, 2));\n  }\n  \n  return [{\n    json: {\n      chatId: documentData.chatId,\n      text: `❌ Conversion failed: ${error.message}\\n\\n💡 Please paste the text directly instead. `,\n      skipAI: true,\n      extractionSuccess: false\n    }\n  }];\n}"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -677,41 +677,16 @@
     },
     {
       "parameters": {
-        "model": {
-          "__rl": true,
-          "value": "gpt-4o-mini",
-          "mode": "list",
-          "cachedResultName": "gpt-4o-mini"
-        },
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1.2,
-      "position": [
-        -608,
-        736
-      ],
-      "id": "b3a7a038-ed71-4a98-aa03-311e0dc21b4b",
-      "name": "OpenAI Chat Model",
-      "credentials": {
-        "openAiApi": {
-          "id": "LXU0jEK33EMb52e5",
-          "name": "OpenAi account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
         "operation": "getAll",
         "calendar": {
           "__rl": true,
-          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "value": "25d2d90ee77be020d7c39b2c5512ab26ba011b6ed7b34863e0af597a0b84e712@group.calendar.google.com",
           "mode": "list",
-          "cachedResultName": "TEST2"
+          "cachedResultName": "Study Schedule"
         },
-        "returnAll": "={{ $fromAI('Return_All', '', 'Boolean') }}",
-        "timeMin": "={{ $fromAI('After', '', 'string') }}",
-        "timeMax": "={{ $fromAI('Before', '', 'string') }}",
+        "returnAll": "={{ $fromAI('Return_All', ``, 'boolean') }}",
+        "timeMin": "={{ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ $fromAI('Before', ``, 'string') }}",
         "options": {
           "orderBy": "startTime"
         }
@@ -736,14 +711,14 @@
         "operation": "update",
         "calendar": {
           "__rl": true,
-          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "value": "25d2d90ee77be020d7c39b2c5512ab26ba011b6ed7b34863e0af597a0b84e712@group.calendar.google.com",
           "mode": "list",
-          "cachedResultName": "TEST2"
+          "cachedResultName": "Study Schedule"
         },
-        "eventId": "={{ $fromAI('Event_ID', '', 'string') }}",
+        "eventId": "={{ $fromAI('Event_ID', ``, 'string') }}",
         "updateFields": {
-          "end": "={{ $fromAI('End', '', 'string') }}",
-          "start": "={{ $fromAI('Start', '', 'string') }}"
+          "end": "={{ $fromAI('End', ``, 'string') }}",
+          "start": "={{ $fromAI('Start', ``, 'string') }}"
         }
       },
       "type": "n8n-nodes-base.googleCalendarTool",
@@ -766,12 +741,12 @@
         "resource": "calendar",
         "calendar": {
           "__rl": true,
-          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "value": "25d2d90ee77be020d7c39b2c5512ab26ba011b6ed7b34863e0af597a0b84e712@group.calendar.google.com",
           "mode": "list",
-          "cachedResultName": "TEST2"
+          "cachedResultName": "Study Schedule"
         },
-        "timeMin": "={{ $fromAI('Start_Time', '', 'string') }}",
-        "timeMax": "={{ $fromAI('End_Time', '', 'string') }}",
+        "timeMin": "={{ $fromAI('Start_Time', ``, 'string') }}",
+        "timeMax": "={{ $fromAI('End_Time', ``, 'string') }}",
         "options": {}
       },
       "type": "n8n-nodes-base.googleCalendarTool",
@@ -794,11 +769,11 @@
         "operation": "delete",
         "calendar": {
           "__rl": true,
-          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "value": "25d2d90ee77be020d7c39b2c5512ab26ba011b6ed7b34863e0af597a0b84e712@group.calendar.google.com",
           "mode": "list",
-          "cachedResultName": "TEST2"
+          "cachedResultName": "Study Schedule"
         },
-        "eventId": "={{ $fromAI('Event_ID', '', 'string') }}",
+        "eventId": "={{ $fromAI('Event_ID', ``, 'string') }}",
         "options": {}
       },
       "type": "n8n-nodes-base.googleCalendarTool",
@@ -820,9 +795,9 @@
       "parameters": {
         "calendar": {
           "__rl": true,
-          "value": "3f311539c2b75abf1e9bffbfe87880ba4f776c406d3e0b347641dada882de058@group.calendar.google.com",
+          "value": "25d2d90ee77be020d7c39b2c5512ab26ba011b6ed7b34863e0af597a0b84e712@group.calendar.google.com",
           "mode": "list",
-          "cachedResultName": "TEST2"
+          "cachedResultName": "Study Schedule"
         },
         "start": "={{ $fromAI('Start', ``, 'string') }}",
         "end": "={{ $fromAI('End', ``, 'string') }}",
@@ -842,6 +817,32 @@
         "googleCalendarOAuth2Api": {
           "id": "NlYg7Jw32kZ9jwiI",
           "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -688,
+        736
+      ],
+      "id": "1972bf6b-52d3-43c2-b5ec-1399c4992266",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LXU0jEK33EMb52e5",
+          "name": "OpenAi account 2"
         }
       }
     }
@@ -1176,17 +1177,6 @@
         ]
       ]
     },
-    "OpenAI Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Calendar",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Get": {
       "ai_tool": [
         [
@@ -1241,15 +1231,27 @@
           }
         ]
       ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Calendar",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timezone": "Asia/Hong_Kong"
   },
-  "versionId": "98340ec9-795d-441e-b2d9-2ff81acd4e9c",
+  "versionId": "82c6638f-210c-409d-9455-dce239e65312",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "adf6274bcd036cc69a63703ea8028bd0ec0c6a8ab35a2d9583da7da9b14c6bb0"

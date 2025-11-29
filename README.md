@@ -559,29 +559,26 @@ AI Model Used:
       - Cannot access real-time information
       - Prone to hallucination if not constrained
       - Limited to text-based input
-    
-    Cost: ~$0.00015 per 1K tokens (~$0.0002 per meeting summary)
-   
 
-API Used:
-OpenAI API:
+Credentials Used:
+1. OpenAI API:
   Terms of Service: https://openai.com/policies/terms-of-use
   Usage Policy: https://openai.com/policies/usage-policies
   Privacy Policy: https://openai.com/policies/privacy-policy
   Note: Usage subject to OpenAI's pricing and rate limits
 
-Google Cloud OAuth2:
+2. Google Cloud OAuth2:
   Terms of Service: https://cloud.google.com/terms
   Privacy Policy: https://policies.google.com/privacy
   Note: Subject to Google Cloud Platform terms and quotas
 
-Telegram Bot API:
+3. Telegram Bot API:
   Terms of Service: https://telegram.org/tos
   Bot API Terms: https://core.telegram.org/bots/faq#what-do-i-need-to-know-about-the-bot-api
   Privacy Policy: https://telegram.org/privacy
   Note: Free to use; subject to rate limits
 
-ConvertAPI:
+4. ConvertAPI:
   Terms of Service: https://www.convertapi.com/terms
   Privacy Policy: https://www.convertapi.com/privacy-policy
   Note: Free tier available; paid usage subject to pricing

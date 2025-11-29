@@ -504,26 +504,9 @@ Monitor in n8n:
 
 ---
 
-## 🆘 **Support**
-
-### **Common Issues**
-
-- [n8n Documentation](https://docs.n8n.io/)
-- [n8n Community Forum](https://community.n8n.io/)
-- [Telegram Bot API](https://core.telegram.org/bots/api)
-
 ### **Contact**
 
 For workflow-specific questions, contact the original developer or refer to this documentation.
-
----
-
-## 🙏 **Acknowledgments**
-
-- **n8n** - Workflow automation platform
-- **GPT-4o-mini** - AI language model and text summarization model
-- **Telegram** - Messaging platform
-- **Google Calendar** - Calendar service
 
 ---
 

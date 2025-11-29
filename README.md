@@ -528,7 +528,7 @@ For workflow-specific questions, contact the original developer or refer to this
 
 ## 📝 **Model License**
 This workflow is provided as-is for educational and personal use.
-
+```
 System Name: Intelligent Calendar Assistant with AI-Powered Meeting Summarization
 Version: 2.0
 Release Date: November 28, 2025
@@ -585,11 +585,7 @@ ConvertAPI:
   Terms of Service: https://www.convertapi.com/terms
   Privacy Policy: https://www.convertapi.com/privacy-policy
   Note: Free tier available; paid usage subject to pricing
----
-
-**Last Updated:** November 29, 2025  
-**n8n Version:** 1.121.3  
-**Author:** CCAI9024 Group 15
+```
 
 ---
 
@@ -615,3 +611,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+**Last Updated:** November 29, 2025  
+**n8n Version:** 1.121.3  
+**Author:** Gerald Benedict Setiawan

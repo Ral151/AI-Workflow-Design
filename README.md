@@ -549,28 +549,65 @@ For workflow-specific questions, contact the original developer or refer to this
 
 ---
 
-## 📝 **License**
+## 📝 **Model License**
 This workflow is provided as-is for educational and personal use.
-```
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including, without limitation, the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software. 
+System Name: Intelligent Calendar Assistant with AI-Powered Meeting Summarization
+Version: 2.0
+Release Date: November 28, 2025
+Developed By: Gerald Benedict Setiawan, Liu Qingyuan Midhat Mowla Siddique 
+Course: CCAI9024 - AI Workflow Design Assignment
+Institution: The University of Hong Kong
+Platform: n8n Workflow Automation
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+AI Model Used:
+1. OpenAI GPT-4o-mini
 
+    Provider: OpenAI
+    Version: Latest 
+    Purpose: Meeting notes summarization and as an AI Calendar
+    Task Type: Text generation, summarization, daily conversation regarding calendar management.
+    Context Window: 128K tokens
+    Temperature: 0.3 (low for consistency)
+    Max Tokens: 1500
+    
+    Capabilities:
+      - Natural language understanding
+      - Text summarization
+      - Structured output generation
+      - Markdown formatting
+    
+    Limitations:
+      - May occasionally miss nuanced context
+      - Cannot access real-time information
+      - Prone to hallucination if not constrained
+      - Limited to text-based input
+    
+    Cost: ~$0.00015 per 1K tokens (~$0.0002 per meeting summary)
+   
+
+API Used:
+OpenAI API:
+  Terms of Service: https://openai.com/policies/terms-of-use
+  Usage Policy: https://openai.com/policies/usage-policies
+  Privacy Policy: https://openai.com/policies/privacy-policy
+  Note: Usage subject to OpenAI's pricing and rate limits
+
+Google Cloud OAuth2:
+  Terms of Service: https://cloud.google.com/terms
+  Privacy Policy: https://policies.google.com/privacy
+  Note: Subject to Google Cloud Platform terms and quotas
+
+Telegram Bot API:
+  Terms of Service: https://telegram.org/tos
+  Bot API Terms: https://core.telegram.org/bots/faq#what-do-i-need-to-know-about-the-bot-api
+  Privacy Policy: https://telegram.org/privacy
+  Note: Free to use; subject to rate limits
+
+ConvertAPI:
+  Terms of Service: https://www.convertapi.com/terms
+  Privacy Policy: https://www.convertapi.com/privacy-policy
+  Note: Free tier available; paid usage subject to pricing
 ---
 
 **Last Updated:** November 29, 2025  
@@ -578,3 +615,26 @@ SOFTWARE.
 **Author:** CCAI9024 Group 15
 
 ---
+
+## 📝 **MIT License**
+```
+Copyright (c) 2025 Gerald Benedict Setiawan, Midhat Mowla Siddique, Liu Qingyuan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

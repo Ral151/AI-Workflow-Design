@@ -7,7 +7,6 @@ An automated workflow that integrates **Telegram Bot**, **Google Calendar**, and
 ## 📋 **Table of Contents**
 
 - [Features](#features)
-- [Architecture](#architecture)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -52,24 +51,6 @@ An automated workflow that integrates **Telegram Bot**, **Google Calendar**, and
 - Scheduled delivery (default: 9 AM daily)
 
 ---
-
-## 🏗️ **Architecture**
-
-```mermaid
-graph LR
-    A[👤 User] -->|Messages| B[💬 Telegram Bot]
-    B -->|Poll/Send| C[⚙️ n8n Workflow]
-    C -->|Query| D[🤖 Google GPT-4o-mini AI]
-    C -->|Summarize| E[🤖 HuggingFace API]
-    C -->|CRUD| F[📅 Google Calendar]
-    
-    style A fill:#ff6b6b
-    style B fill:#339af0
-    style C fill:#4dabf7
-    style D fill:#9775fa
-    style E fill:#9775fa
-    style F fill:#51cf66
-```
 
 ### **Data Flow**
 

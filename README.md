@@ -66,7 +66,7 @@ An automated workflow that integrates **Telegram Bot**, **Google Calendar**, and
 
 ### **Required Services**
 
-1. **N8N** (v1.119.1 or higher)
+1. **N8N** (1.121.3 or latest)
    - Download the N8N using either npx or npm.  
    - [Installation Guide](https://docs.n8n.io/hosting/installation/npm/)
     
@@ -86,13 +86,10 @@ An automated workflow that integrates **Telegram Bot**, **Google Calendar**, and
 5. **OpenAI API**
    - API key from [Open AI Platform](https://platform.openai.com/api-keys)
 
-6. **HuggingFace API**
-   - Access token from [HuggingFace](https://huggingface.co/settings/tokens)
-
-7. **VPN**
+6. **VPN**
    - Connect your device with any VPN to ensure you can access OpenAI and run the workflow.
 
-8. **ConvertAPI**
+7. **ConvertAPI**
    - Token from [ConvertAPI](https://www.convertapi.com/a/authentication)
    - Free tier: 250 conversions/month
 
@@ -382,7 +379,7 @@ Telegram Poll → Process Updates → Remove Duplicates → Route Commands
 
 #### **2. Meeting Summary Flow**
 ```
-Detect Long Message → Processing Alert → HuggingFace Summarize
+Detect Long Message → Processing Alert → AI Summarize
     ↓
 Merge → Format Notes → Extract Actions → Parse Dates
     ↓
@@ -404,7 +401,7 @@ Build TO-DO List → Send to Telegram
 | **Remove Duplicates** | Filter previously seen messages |
 | **AI Calendar** | OpenAI AI agent with Google Calendar tools |
 | **Memory** | Stores conversation context per session |
-| **Summarize Meeting** | HuggingFace BART model for text summarization |
+| **Summarize Meeting** | GPT-4o-mini model for text summarization |
 | **Extract Actions** | Smart extraction of action items from notes |
 | **Parse Dates** | Detect dates & times, create appropriate event types |
 | **Process Alerts** | Categorize events by urgency (overdue/urgent/soon/upcoming) |
@@ -523,8 +520,7 @@ For workflow-specific questions, contact the original developer or refer to this
 ## 🙏 **Acknowledgments**
 
 - **n8n** - Workflow automation platform
-- **GPT-4o-mini** - AI language model
-- **HuggingFace** - Text summarization model
+- **GPT-4o-mini** - AI language model and text summarization model
 - **Telegram** - Messaging platform
 - **Google Calendar** - Calendar service
 

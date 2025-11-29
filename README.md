@@ -12,6 +12,7 @@ An automated workflow that integrates **Telegram Bot**, **Google Calendar**, and
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [Workflow Components](#workflow-components)
+- [Customization](#customization)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
 

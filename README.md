@@ -28,14 +28,14 @@ An automated workflow that integrates **Telegram Bot**, **Google Calendar**, and
 
 **Examples:**
 ```
-"Schedule team meeting tomorrow at 2 PM"
-"What's on my calendar today?"
-"Delete the meeting on November 27"
+"Schedule team meeting on 12th of December at 2 PM - 3PM"
+"What's my schedule tomorrow?"
+"Delete the meeting on November 27."
 "Move the 3 PM meeting to 4 PM"
 ```
 
 ### **2. 📝 Meeting Summary Agent**
-- Paste meeting notes (>200 characters) into Telegram
+- Paste meeting notes (>300 characters) into Telegram
 - AI automatically generates summary
 - Extracts action items with deadlines
 - Creates calendar events for all action items
@@ -49,12 +49,6 @@ An automated workflow that integrates **Telegram Bot**, **Google Calendar**, and
 
 ### **3. ⏰ Daily Reminders**
 - Automated daily TO-DO list sent to Telegram
-- Categorizes events by urgency:
-  - 🚨 **Overdue**
-  - 🔥 **Urgent** (Next 24 hours)
-  - ⚠️ **This Week**
-  - 📆 **Upcoming** (grouped by month)
-- Distinguishes between meetings (⏰) and tasks (📋)
 - Scheduled delivery (default: 9 AM daily)
 
 ---
@@ -100,6 +94,7 @@ graph LR
    - Requires creating a new channel exclusively for the bot. 
 
 2. **Telegram Bot**
+   - Documentation of how to get a Telegram bot token from this [official website](https://core.telegram.org/bots/tutorial#introduction)
    - Bot Token from [@BotFather](https://t.me/BotFather)
    - Channel Chat ID
 
@@ -107,27 +102,43 @@ graph LR
    - OAuth2 credentials
    - [Setup Guide](https://developers.google.com/calendar/api/quickstart)
 
-5. **Google Gemini API**
-   - API key from [Google AI Studio](https://aistudio.google.com/api-keys)
+5. **OpenAI API**
+   - API key from [Open AI Platform](https://platform.openai.com/api-keys)
 
 6. **HuggingFace API**
    - Access token from [HuggingFace](https://huggingface.co/settings/tokens)
 
 7. **VPN**
    - Connect your device with any VPN to ensure you can access Gemini and run the workflow.
+
+8. **ConvertAPI**
+   - Token from [ConvertAPI](https://www.convertapi.com/a/authentication)
+   - Free tier: 250 conversions/month
+
+
      
 ---
 
 ## 🚀 **Installation**
 
-### **Step 1: Import Workflow**
+### **Step 1: Install n8n**
+# Via npm (recommended)
+npm install -g n8n
+
+# Start n8n
+n8n start
+
+# Access UI
+http://localhost:5678
+
+### **Step 2: Import Workflow**
 
 1. Open your n8n instance
 2. Click **"Create Workflows"** → **"Three dots in upper right corner"** → **"Import from File"**
-3. Select `Master_Workflow_Final.json`
+3. Select `workflow.json`
 4. Click **"Import"**
 
-### **Step 2: Configure Credentials**
+### **Step 3: Configure Credentials**
 
 The workflow requires **4 credentials**. Follow the setup below:
 
@@ -140,30 +151,31 @@ The workflow requires **4 credentials**. Follow the setup below:
 **Get Token:**
 ```
 1. Open Telegram and search for @BotFather
-2. Send /newbot
-3. Follow instructions to create bot
-4. Copy the Bot Token (format: 1234567890:ABCdefGHIjklMNOpqrsTUVwxyz)
+2. Send /start
+3. Send /newbot
+4. Follow instructions to create a bot
+5. Copy the Bot Token (format: 1234567890:ABCdefGHIjklMNOpqrsTUVwxyz)
 ```
 
 **Get Chat ID:**
 ```
-1. Add your bot to a channel/group
+1. Add your bot to a channel
 2. Send a test message in the channel
 3. Visit: https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
-4. Find "chat":{"id":-1001234567890} in the response
-5. Copy the chat ID (include the minus sign)
+4. Find following format like "sender_chat":{"id":-1001234567890} in the response
+5. Copy your chat ID (include the minus sign)
 ```
 
 **Configure in n8n:**
 ```
-Settings → Credentials → Add Credential → Telegram
+Dashboard -> Credentials -> Create Credentials -> Search for Telegram API
 - Access Token: [Paste Bot Token]
 - Save
 ```
 
 **Update Workflow:**
-- Find all Telegram nodes
-- Replace `chatId: "-1003487374430"` with your Chat ID
+- Find Telegram node that has chatID Value -1003487374430
+- Replace `chatId: "-1003487374430"` with your Chat ID. 
 
 ---
 
@@ -172,20 +184,32 @@ Settings → Credentials → Add Credential → Telegram
 **Create Google Cloud Project:**
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create new project or select existing
-3. Enable **Google Calendar API**
-   - APIs & Services → Library → Search "Calendar" → Enable
+2. Create a new project or select an existing one
+3. Select the project you want to use
+4. Enable **Google Calendar API**
+   - APIs & Services → Enable APIs and Services -> Library -> Search for Google Calendar API -> Enable 
 
-**Create OAuth Credentials:**
+**Create OAuth2 Credentials:**
 
 1. APIs & Services → Credentials → Create Credentials → OAuth Client ID
-2. Application type: **Web application**
-3. Authorized redirect URIs: `https://YOUR_N8N_URL/rest/oauth2-credential/callback`
-4. Copy **Client ID** and **Client Secret**
+2. Configure consent screen (if first time):
+   - User Type: External
+   - App name: "Meeting Assistant."
+   - Support email: [Your email]
+   - Save
+4. Application type: **Web application**
+5. Name: "n8n Calendar Integration"
+6. Authorized redirect URIs: 
+   `http://localhost:5678/rest/oauth2-credential/callback`
+   (Replace localhost:5678 with your n8n URL if different)
+7. Click Create
+8. Configure OAuth clients (if first time):
+   Create OAuth Client -> 
+10. Copy **Client ID** and **Client Secret**
 
 **Configure in n8n:**
 ```
-Settings → Credentials → Add Credential → Google Calendar OAuth2
+Dashboard -> Credentials -> Create Credentials -> Google Calendar OAuth2
 - Client ID: [Paste]
 - Client Secret: [Paste]
 - Click "Connect to Google"
@@ -199,54 +223,69 @@ Settings → Credentials → Add Credential → Google Calendar OAuth2
 
 ---
 
-### **3. Google Gemini API**
+### **3. OpenAI API**
 
 **Get API Key:**
 
-1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Click **"Create API Key"**
-3. Copy the key
+1. Visit: [OpenAI Platform](https://platform.openai.com/api-keys)
+2. Click "Create new secret key"
+3. Name: "n8n-meeting-assistant"
+4. Copy key: sk-proj-xxxxxxxxxxxxxxxxxxxxx
+5. Store securely (shown only once!)
 
 **Configure in n8n:**
 ```
-Settings → Credentials → Add Credential → Google PaLM API (Gemini)
-- API Key: [Paste]
-- Save
+Find node "📄 ConvertAPI - Extract Text" and replace:
+// Line 14 in the code:
+const CONVERTAPI_SECRET = 'YOUR_CONVERTAPI_SECRET';
+
+// Replace with:
+const CONVERTAPI_SECRET = 'abc123def456...';
 ```
 
 ---
 
-### **4. HuggingFace API Token**
+### **3. OpenAI API**
+**Get API Token:**
 
-**Get Token:**
-
-1. Visit [HuggingFace Settings](https://huggingface.co/settings/tokens)
-2. Click **"New Token"**
-3. Name: `n8n-workflow`
-4. Type: **Read**
-5. Copy token
-
-**Update Workflow:**
-- Find node **"🤖 Summarize Meeting"**
-- Replace Authorization header:
-  ```
-  Bearer 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
-  ```
-  with
-  ```
-  Bearer YOUR_HUGGINGFACE_TOKEN
-  ```
+1. Sign up: https://www.convertapi.com/a/signup
+2. Verify email
+3. Go to: https://www.convertapi.com/a/auth
+4. Create a new token or simply copy your secret token: abc123def456... 
 
 ---
 
 ## 🎮 **Usage**
 
+### **Change The Date Settings**
+In AI Calendar node, under the System Message section:
+`Today's date is 29 November, 2025.\n\nYou're an AI Calendar Assistant with Google Calendar access.\n\nUse tools to create, delete, update, check, and get events.\n\nBe friendly, concise. Use emojis: ✅❌🗑️✏️\n\nConfirm all actions. Do not use any LaTeX at all.`
+
+Change the Today's date to the current date. Otherwise, you need to be very specific and cannot use word like tomorrow in your input. 
+
+
 ### **Activate Workflow**
 
+**If First Time chat in the channel**
 1. Open workflow in n8n
 2. Click **"Active"** toggle (top right)
 3. Workflow is now running!
-4. You can start to text message in your Telegram channel 
+4. You can start to text message in your Telegram channel
+5. If you want to take a look at the result of the daily reminder without waiting for the designated time, click execute workflow directly beside the "⏰ TRIGGER: Daily Alerts" node.
+
+**If not, First time chat in the channel**
+1. Open workflow in n8n
+2. Remove a node called Remove Duplicates
+3. Create a new Remove Duplicates again with the same settings:
+   ```
+   Operation: Remove Items Processed in Previous Executions
+   Keep Items Where: Value is New
+   Value to Dedupe on: {{ $json.messageText }}
+   ```
+5. You can start to text message in your Telegram channel
+6. Click **"Active"** toggle (top right)
+7. Workflow is now running!
+8. Continue your conversation
 
 ### **Basic Commands**
 
@@ -258,18 +297,25 @@ Settings → Credentials → Add Credential → Google PaLM API (Gemini)
 
 #### **Calendar Management**
 ```
-Schedule team meeting tomorrow at 2 PM
-What's on my calendar today?
-Show me events for next week
-Delete the meeting on November 27
-Move the 3 PM meeting to 4 PM
-Check my schedule for December 15
+Each Input is separated by gap:
+Schedule a math test on 9th December at 9am-10:30am.
+
+Update my math test on 9th December to 3rd December.
+
+My math test on 3rd December got cancelled.
+
+What's my schedule for the next 3 weeks.
+
+Delete all my events for the next 3 weeks
+
 etc
 ```
 
 #### **Meeting Summary**
 ```
-Just paste your meeting notes (>200 characters) directly!
+Just paste your meeting notes (>300 characters) or simply upload your PDF or DOCX file directly:
+
+Important things: 
 Include keywords in a particular section, like: ACTION ITEMS, TASK ASSIGNMENTS, TO DO LIST, DELIVERABLES, NEXT STEPS, FOLLOW UP ITEMS. Follow up with several action items under the section to ensure the workflow can extract the action items and parse them to the calendar system. Try to specifically mention the date of your action items, either with or without time. Otherwise, the calendar will not consider it as an action item and won't input it in your calendar system. 
 ```
 
@@ -435,52 +481,18 @@ Build TO-DO List → Send to Telegram
 
 ---
 
-### **Issue: Calendar Events Not Created**
-
-**Check:**
-1. Google Calendar OAuth2 is connected
-2. Calendar email matches in all nodes
-3. Calendar API is enabled in Google Cloud
-
-**Debug:**
-- Test node "AI Calendar" → Check if tools are working
-- Verify date format in error logs
-
----
-
-### **Issue: Meeting Summary Not Working**
-
-**Check:**
-1. HuggingFace token is valid
-2. Message is >200 characters
-3. Contains keywords: meeting, action items, attendees
-
-**Debug:**
-- Check node "🤖 Summarize Meeting" → View HTTP response
-- Verify token hasn't expired
-
----
-
-### **Issue: Daily Reminder Not Sent**
-
-**Check:**
-1. Trigger time is in the correct timezone
-2. Workflow is active during trigger time
-3. Telegram channel ID is correct
-
-**Debug:**
-- Manually execute "⏰ TRIGGER: Daily Alerts" node
-- Check if events are being fetched
-
----
-
 ### **Issue: You want to send the previous input, but it cannot be run**
 
 **Solution:**
 1. Deactivate workflow
 2. Find the **"Remove Duplicates"** node and delete it
-3. Create a new **"Remove Duplicates"** with the same settings as the previously **"Remove Duplicates"** deleted node
-4. Reactivate workflow
+3. Create a new **"Remove Duplicates"** with the same settings as the previously **"Remove Duplicates"** deleted node:
+   ```
+   Operation: Remove Items Processed in Previous Executions
+   Keep Items Where: Value is New
+   Value to Dedupe on: {{ $json.messageText }}
+   ```
+5. Reactivate workflow
 
 ---
 
@@ -488,11 +500,10 @@ Build TO-DO List → Send to Telegram
 
 | Component | Limit | Notes |
 |-----------|-------|-------|
-| Telegram Messages | 30 messages/second | Rate limited by Telegram |
 | Calendar Events | No limit | Google Calendar API quota |
 | Message Length | 4096 characters | Telegram limit |
-| Workflow Executions | Depends on n8n plan | Self-hosted = unlimited |
-| HuggingFace API | Rate limited | Free tier: 1000 requests/day |
+| ConvertAPI | 250 Conversion for first-time user and 25/month onwards | ConvertAPI Maximum Conversion |
+
 
 ---
 
@@ -511,17 +522,6 @@ Monitor in n8n:
 - Success rate
 - Error rate
 - Average execution time
-
----
-
-## 🔒 **Security Best Practices**
-
-1. **Never commit credentials** to version control
-2. Use **environment variables** for sensitive data
-3. Restrict **Google Calendar API** scope to minimum required
-4. Regularly **rotate API tokens**
-5. Use **HTTPS** for n8n instance
-6. Enable **2FA** on all accounts
 
 ---
 
@@ -582,9 +582,32 @@ Currently configured: **Asia/Hong_Kong (UTC+8)**
 
 ---
 
-**Last Updated:** November 25, 2025  
-**Workflow Version:** 1.0  
-**n8n Version:** 1.119.1  
-**Author:** Gerald Benedict Setiawan 
+## 📝 **License**
+This workflow is provided as-is for educational and personal use.
+```
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including, without limitation, the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software. 
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+**Last Updated:** November 29, 2025  
+**n8n Version:** 1.121.3  
+**Author:** CCAI9024 Group 15
 
 ---

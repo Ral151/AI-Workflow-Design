@@ -59,7 +59,7 @@ An automated workflow that integrates **Telegram Bot**, **Google Calendar**, and
 graph LR
     A[👤 User] -->|Messages| B[💬 Telegram Bot]
     B -->|Poll/Send| C[⚙️ n8n Workflow]
-    C -->|Query| D[🤖 Google Gemini AI]
+    C -->|Query| D[🤖 Google GPT-4o-mini AI]
     C -->|Summarize| E[🤖 HuggingFace API]
     C -->|CRUD| F[📅 Google Calendar]
     
@@ -109,7 +109,7 @@ graph LR
    - Access token from [HuggingFace](https://huggingface.co/settings/tokens)
 
 7. **VPN**
-   - Connect your device with any VPN to ensure you can access Gemini and run the workflow.
+   - Connect your device with any VPN to ensure you can access OpenAI and run the workflow.
 
 8. **ConvertAPI**
    - Token from [ConvertAPI](https://www.convertapi.com/a/authentication)
@@ -421,7 +421,7 @@ Build TO-DO List → Send to Telegram
 |-----------|----------|
 | **Process Updates** | Parse Telegram messages, detect type (command/calendar/notes) |
 | **Remove Duplicates** | Filter previously seen messages |
-| **AI Calendar** | Gemini AI agent with Google Calendar tools |
+| **AI Calendar** | OpenAI AI agent with Google Calendar tools |
 | **Memory** | Stores conversation context per session |
 | **Summarize Meeting** | HuggingFace BART model for text summarization |
 | **Extract Actions** | Smart extraction of action items from notes |
@@ -532,7 +532,6 @@ Monitor in n8n:
 - [n8n Documentation](https://docs.n8n.io/)
 - [n8n Community Forum](https://community.n8n.io/)
 - [Telegram Bot API](https://core.telegram.org/bots/api)
-- [Google Calendar API](https://developers.google.com/calendar/api/guides/overview)
 
 ### **Contact**
 
@@ -540,45 +539,13 @@ For workflow-specific questions, contact the original developer or refer to this
 
 ---
 
-## 📝 **License**
-
-This workflow is provided as-is for educational purposes.
-
----
-
 ## 🙏 **Acknowledgments**
 
 - **n8n** - Workflow automation platform
-- **Google Gemini** - AI language model
+- **GPT-4o-mini** - AI language model
 - **HuggingFace** - Text summarization model
 - **Telegram** - Messaging platform
 - **Google Calendar** - Calendar service
-
----
-
-## 📚 **Appendix**
-
-### **A. Workflow Statistics**
-
-- **Total Nodes:** 35
-- **Trigger Nodes:** 2
-- **AI Nodes:** 2
-- **Calendar Nodes:** 7
-- **Telegram Nodes:** 6
-- **Processing Nodes:** 18
-
-### **B. API Endpoints Used**
-
-```
-Telegram Bot API: https://api.telegram.org/bot{token}/getUpdates
-HuggingFace: https://router.huggingface.co/hf-inference/models/philschmid/bart-large-cnn-samsum
-Google Calendar API: https://www.googleapis.com/calendar/v3/
-Google Gemini API: Via n8n integration
-```
-
-### **C. Timezone Support**
-
-Currently configured: **Asia/Hong_Kong (UTC+8)**
 
 ---
 

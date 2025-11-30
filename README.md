@@ -186,6 +186,11 @@ Dashboard -> Credentials -> Create Credentials -> Search for Telegram API
    Create OAuth Client -> 
 10. Copy **Client ID** and **Client Secret**
 
+
+**Register Your Account**
+1. Audience -> Scroll down to Test users -> Add users -> Add your gmail account -> Save
+
+
 **Configure in n8n:**
 ```
 Dashboard -> Credentials -> Create Credentials -> Google Calendar OAuth2

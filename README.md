@@ -229,7 +229,7 @@ const CONVERTAPI_SECRET = 'abc123def456...';
 
 ---
 
-### **3. OpenAI API**
+### **4. Convert API Token**
 **Get API Token:**
 
 1. Sign up: https://www.convertapi.com/a/signup

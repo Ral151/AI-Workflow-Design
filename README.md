@@ -67,41 +67,49 @@ An automated workflow that integrates **Telegram Bot**, **Google Calendar**, and
 
 ### **Required Services**
 
-1. **N8N** (1.121.3 or latest)
+1. **NODE JS and NPM**
+   - Make sure Node.js and NPM are installed on your laptop
+   - Download the version that contains "LTS"
+   - [Installation Link](https://nodejs.org/en/download/)
+   - [Installation Guidance for Windows](https://www.youtube.com/watch?v=8FjrJ51fyqo)
+   - [Installation Guidance for Windows](https://www.youtube.com/watch?v=0LWJ3gmScUY)
+
+2. **N8N** (1.121.3 or latest)
    - Download the N8N using either npx or npm.  
    - [Installation Guide](https://docs.n8n.io/hosting/installation/npm/)
-    
-2. **Telegram App**
+
+3. **Telegram App**
    - Download the Telegram for [Windows](https://desktop.telegram.org/) or [Mac](https://macos.telegram.org/)
    - Requires creating a new channel exclusively for the bot. 
 
-2. **Telegram Bot**
+4. **Telegram Bot**
    - Documentation of how to get a Telegram bot token from this [official website](https://core.telegram.org/bots/tutorial#introduction)
    - Bot Token from [@BotFather](https://t.me/BotFather)
    - Channel Chat ID
 
-4. **Google Calendar API**
-   - OAuth2 credentials
-   - [Setup Guide](https://developers.google.com/calendar/api/quickstart)
+5. **Google Cloud Key**
+   - OAuth2 credentials from [Google Cloud Console](https://console.cloud.google.com/)
+   - Documentation of how set it from n8n [official website](https://docs.n8n.io/integrations/builtin/credentials/google/oauth-generic/#configure-your-oauth-consent-screen) and for more specific things, you can watch the [video](https://youtu.be/FBGtpWMTppw) provided there.
 
-5. **OpenAI API**
+6. **OpenAI API**
    - API key from [Open AI Platform](https://platform.openai.com/api-keys)
 
-6. **VPN**
+7. **VPN**
    - Connect your device with any VPN to ensure you can access OpenAI and run the workflow.
 
-7. **ConvertAPI**
+8. **ConvertAPI**
    - Token from [ConvertAPI](https://www.convertapi.com/a/authentication)
    - Free tier: 250 conversions/month
-
-
-     
+    
 ---
 
 ## 🚀 **Installation**
+### **Step 1: Install NodeJS and NPM (If you haven't)**
+- Simply download it directly from the [official website](https://nodejs.org/en/download/)
+- If you face any difficulties, try to watch the guidance
 
-### **Step 1: Install n8n**
-# Via npm (recommended)
+### **Step 2: Install n8n**
+# Via npm using your terminal (recommended)
 npm install -g n8n
 
 # Start n8n
@@ -110,14 +118,15 @@ n8n start
 # Access UI
 http://localhost:5678
 
-### **Step 2: Import Workflow**
+### **Step 3: Import Workflow**
 
 1. Open your n8n instance
 2. Click **"Create Workflows"** → **"Three dots in upper right corner"** → **"Import from File"**
 3. Select `workflow.json`
 4. Click **"Import"**
 
-### **Step 3: Configure Credentials**
+### **Step 4: Configure Credentials**
+1. Dashboard -> Credentials -> Create Credentials -> Search for Telegram API
 
 The workflow requires **4 credentials**. Follow the setup below:
 
@@ -142,7 +151,7 @@ The workflow requires **4 credentials**. Follow the setup below:
 2. Send a test message in the channel
 3. Visit: https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
 4. Find following format like "sender_chat":{"id":-1001234567890} in the response
-5. Copy your chat ID (include the minus sign)
+5. Copy your chat ID 
 ```
 
 **Configure in n8n:**
@@ -153,12 +162,22 @@ Dashboard -> Credentials -> Create Credentials -> Search for Telegram API
 ```
 
 **Update Workflow:**
-- Find Telegram node that has chatID Value -1003487374430
-- Replace `chatId: "-1003487374430"` with your Chat ID. 
+- Find Telegram node that has chatID Value 8599070508
+- Replace it with your Chat ID.
+  
+- Find "HTTP Request" Node and "Get Updates" node that have this URL: https://api.telegram.org/bot8218962156:AAFq0DsbA9_Npqggny7AW-ser2CvG9_9zbs/getUpdates
+- Replace it with `https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates`
 
+- Find "Get File Info" Node and find this URL: https://api.telegram.org/bot8218962156:AAFq0DsbA9_Npqggny7AW-ser2CvG9_9zbs/getFile
+- Replace it with `https://api.telegram.org/bot<YOUR_TOKEN>/getFile`
+  
+- Find "Download File" Node that has this URL: https://api.telegram.org/file/bot8218962156:AAFq0DsbA9_Npqggny7AW-ser2CvG9_9zbs/{{ $json.result.file_path }}
+- Replace it with `https://api.telegram.org/file/bot<YOUR_TOKEN>/{{ $json.result.file_path }}`
 ---
 
 ### **2. Google Calendar OAuth2**
+
+Below Instructions to set the OAuth2 is quite similar with the video provided [here](https://youtu.be/FBGtpWMTppw)
 
 **Create Google Cloud Project:**
 
@@ -203,7 +222,7 @@ Dashboard -> Credentials -> Create Credentials -> Google Calendar OAuth2
 
 **Update Workflow:**
 - Find all Google Calendar nodes
-- Replace email `geraldsch.cdg@gmail.com` with your Google email
+- Replace the Calendar Section filled with "Study Schedule" with your Google email
 
 ---
 
@@ -219,6 +238,24 @@ Dashboard -> Credentials -> Create Credentials -> Google Calendar OAuth2
 
 **Configure in n8n:**
 ```
+Dashboard -> Credentials -> Create Credentials -> OpenAI
+- API Key: [Paste]
+- Save
+```
+Note that if you're using the key provided on the OpenAI official website, you just need to paste the key. Otherwise, you need to paste the URL given from the unofficial website.
+
+---
+
+### **4. Convert API Token**
+**Get API Token:**
+
+1. Sign up: https://www.convertapi.com/a/signup
+2. Verify email
+3. Go to: https://www.convertapi.com/a/auth
+4. Create a new token or simply copy your secret token: abc123def456...
+
+**Configure in n8n:**
+```
 Find node "📄 ConvertAPI - Extract Text" and replace:
 // Line 14 in the code:
 const CONVERTAPI_SECRET = 'YOUR_CONVERTAPI_SECRET';
@@ -229,23 +266,13 @@ const CONVERTAPI_SECRET = 'abc123def456...';
 
 ---
 
-### **4. Convert API Token**
-**Get API Token:**
-
-1. Sign up: https://www.convertapi.com/a/signup
-2. Verify email
-3. Go to: https://www.convertapi.com/a/auth
-4. Create a new token or simply copy your secret token: abc123def456... 
-
----
-
 ## 🎮 **Usage**
 
 ### **Change The Date Settings**
 In AI Calendar node, under the System Message section:
 `Today's date is 29 November, 2025.\n\nYou're an AI Calendar Assistant with Google Calendar access.\n\nUse tools to create, delete, update, check, and get events.\n\nBe friendly, concise. Use emojis: ✅❌🗑️✏️\n\nConfirm all actions. Do not use any LaTeX at all.`
 
-Change the Today's date to the current date. Otherwise, you need to be very specific and cannot use word like tomorrow in your input. 
+Change the Today's date to the current date. Otherwise, you need to be very specific regarding the dates that you want to input in the Calendar. 
 
 
 ### **Activate Workflow**
@@ -255,7 +282,7 @@ Change the Today's date to the current date. Otherwise, you need to be very spec
 2. Click **"Active"** toggle (top right)
 3. Workflow is now running!
 4. You can start to text message in your Telegram channel
-5. If you want to take a look at the result of the daily reminder without waiting for the designated time, click execute workflow directly beside the "⏰ TRIGGER: Daily Alerts" node.
+5. If you want to take a look at the result of the daily reminder without waiting for the designated time, click Execute Workflow directly beside the "⏰ TRIGGER: Daily Alerts" node.
 
 **If not, First time chat in the channel**
 1. Open workflow in n8n
@@ -297,7 +324,7 @@ etc
 
 #### **Meeting Summary**
 ```
-Just paste your meeting notes (>300 characters) or simply upload your PDF or DOCX file directly:
+Just paste your meeting notes (need to be >300 characters) or simply upload your PDF or DOCX file directly:
 
 Important things: 
 Include keywords in a particular section, like: ACTION ITEMS, TASK ASSIGNMENTS, TO DO LIST, DELIVERABLES, NEXT STEPS, FOLLOW UP ITEMS. Follow up with several action items under the section to ensure the workflow can extract the action items and parse them to the calendar system. Try to specifically mention the date of your action items, either with or without time. Otherwise, the calendar will not consider it as an action item and won't input it in your calendar system. 
@@ -434,7 +461,7 @@ Build TO-DO List → Send to Telegram
 
 ### **Modify Telegram Channel**
 
-1. Search for: `-1003487374430`
+1. Search for: chatID Section
 2. Replace with your channel ID in all nodes
 
 ### **Change Timezone**
@@ -521,7 +548,7 @@ This workflow is provided as-is for educational and personal use.
 System Name: Intelligent Calendar Assistant with AI-Powered Meeting Summarization
 Version: 2.0
 Release Date: November 28, 2025
-Developed By: Gerald Benedict Setiawan, Liu Qingyuan Midhat Mowla Siddique 
+Developed By: Gerald Benedict Setiawan, Liu Qingyuan, Midhat Mowla Siddique 
 Course: CCAI9024 - AI Workflow Design Assignment
 Institution: The University of Hong Kong
 Platform: n8n Workflow Automation

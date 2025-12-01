@@ -30,8 +30,8 @@ An automated workflow that integrates **Telegram Bot**, **Google Calendar**, and
 ```
 "Schedule team meeting on 12th of December at 2 PM - 3PM"
 "What's my schedule tomorrow?"
-"Delete the meeting on November 27."
-"Move the 3 PM meeting to 4 PM"
+"Delete the meeting on December 12."
+"Move the 2 PM meeting to 4 PM on the 12th of December 2025."
 ```
 
 ### **2. 📝 Meeting Summary Agent**
@@ -273,7 +273,7 @@ const CONVERTAPI_SECRET = 'abc123def456...';
 
 ### **Change The Date Settings**
 In AI Calendar node, under the System Message section:
-`Today's date is 29 November, 2025.\n\nYou're an AI Calendar Assistant with Google Calendar access.\n\nUse tools to create, delete, update, check, and get events.\n\nBe friendly, concise. Use emojis: ✅❌🗑️✏️\n\nConfirm all actions. Do not use any LaTeX at all.`
+`Today's date is 28 November, 2025.\n\nYou're an AI Calendar Assistant with Google Calendar access.\n\nUse tools to create, delete, update, check, and get events.\n\nBe friendly, concise. Use emojis: ✅❌🗑️✏️\n\nConfirm all actions. Do not use any LaTeX at all.`
 
 Change the Today's date to the current date. Otherwise, you need to be very specific regarding the dates that you want to input in the Calendar. 
 
@@ -309,16 +309,16 @@ Change the Today's date to the current date. Otherwise, you need to be very spec
 /help     - Display help menu
 ```
 
-#### **Calendar Management**
+#### **Calendar Management (Sample Input)**
 ```
 Each Input is separated by gap:
 Schedule a math test on 9th December at 9am-10:30am.
 
-Update my math test on 9th December to 3rd December.
+Change my math test on 9th December to 3rd December.
 
 My math test on 3rd December got cancelled.
 
-What's my schedule for the next 3 weeks.
+What's my schedule for the next 3 weeks?
 
 Delete all my events for the next 3 weeks
 
@@ -333,7 +333,7 @@ Important things:
 Include keywords in a particular section, like: ACTION ITEMS, TASK ASSIGNMENTS, TO DO LIST, DELIVERABLES, NEXT STEPS, FOLLOW UP ITEMS. Follow up with several action items under the section to ensure the workflow can extract the action items and parse them to the calendar system. Try to specifically mention the date of your action items, either with or without time. Otherwise, the calendar will not consider it as an action item and won't input it in your calendar system. 
 ```
 
-**Example Meeting Notes Input:**
+**Sample Meeting Notes Input:**
 ```
 PRODUCT LAUNCH PLANNING MEETING
 Date: November 24, 2025
@@ -550,7 +550,7 @@ This workflow is provided as-is for educational and personal use.
 ```
 System Name: Intelligent Calendar Assistant with AI-Powered Meeting Summarization
 Version: 2.0
-Release Date: November 28, 2025
+Release Date: November 29, 2025
 Developed By: Gerald Benedict Setiawan, Liu Qingyuan, Midhat Mowla Siddique 
 Course: CCAI9024 - AI Workflow Design Assignment
 Institution: The University of Hong Kong

@@ -277,6 +277,9 @@ In AI Calendar node, under the System Message section:
 
 Change the Today's date to the current date. Otherwise, you need to be very specific regarding the dates that you want to input in the Calendar. 
 
+### **Change The Timezone Settings in your workflow**
+1. Click the three dots in the top right corner of your workflow
+2. Change the timezone into Asia/Hong Kong
 
 ### **Activate Workflow**
 

@@ -147,11 +147,14 @@ The workflow requires **4 credentials**. Follow the setup below:
 
 **Get Chat ID:**
 ```
-1. Add your bot to a channel
-2. Send a test message in the channel
-3. Visit: https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
-4. Find following format like "sender_chat":{"id":-1001234567890} in the response
-5. Copy your chat ID 
+1. Create a Channel
+2. Add your bot to a channel (You need to type your bot name precisely to be added as a member in your channel)
+3. Make the bot to be an admin and save
+4. Send a test message in the channel
+5. Visit: https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates 
+6. Find following format like "sender_chat":{"id":-1001234567890} in the response
+7. If you do not see that format, try to send a new message again in your channel.
+7. Copy your chat ID 
 ```
 
 **Configure in n8n:**
@@ -165,7 +168,7 @@ Dashboard -> Credentials -> Create Credentials -> Search for Telegram API
 - Find Telegram node that has chatID Value 8599070508
 - Replace it with your Chat ID.
   
-- Find "HTTP Request" Node and "Get Updates" node that have this URL: https://api.telegram.org/bot8218962156:AAFq0DsbA9_Npqggny7AW-ser2CvG9_9zbs/getUpdates
+- Find Nodes called "HTTP Request" and "Get Updates" that have this URL: https://api.telegram.org/bot8218962156:AAFq0DsbA9_Npqggny7AW-ser2CvG9_9zbs/getUpdates
 - Replace it with `https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates`
 
 - Find "Get File Info" Node and find this URL: https://api.telegram.org/bot8218962156:AAFq0DsbA9_Npqggny7AW-ser2CvG9_9zbs/getFile
@@ -215,8 +218,8 @@ Below Instructions to set the OAuth2 is quite similar with the video provided [h
 Dashboard -> Credentials -> Create Credentials -> Google Calendar OAuth2
 - Client ID: [Paste]
 - Client Secret: [Paste]
-- Click "Connect to Google"
-- Grant permissions
+- Click "Connect to Google" 
+- Grant all of the permissions and continue
 - Save
 ```
 
